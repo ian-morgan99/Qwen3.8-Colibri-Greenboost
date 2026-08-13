@@ -61,7 +61,7 @@ router + cache state → different expert IDs
 - **Learned Residency**: Implement dynamic expert tier assignment based on usage patterns and workload heatmaps.
 
 ### 3.2 GreenBoost
-- **Pinned Memory**: Optimize CPU memory allocation for zero-copy transfers to GPU.
+- **Pinned Memory**: Implement pinned host arenas supporting high-throughput asynchronous DMA and overlap with GPU compute (not CUDA mapped zero-copy access).
 - **Transfer**: Optimize NVMe→RAM and RAM→GPU data movement pipelines.
 - **Allocation**: Manage memory pools efficiently across VRAM, RAM, and NVMe tiers.
 - **Telemetry Tuning**: Provide low-overhead metrics collection for transfer efficiency and bottlenecks.
@@ -95,6 +95,8 @@ router + cache state → different expert IDs
 11. Estimate **zero-miss-step probability**, not just average expert hit rate (critical: a cache with 95% expert hits can still perform badly if nearly every generation step contains at least one miss).
 12. **Output Qwen3.8→vLLM-Moet compatibility gate matrix**: `tensor → shape → dtype → expert role → existing kernel compatible? → conversion required?`
     - This is a **go/no-go gate**. If Qwen's K/N dimensions do not match one of the existing SM120 cubins, the project needs a kernel extension before cache work matters.
+
+**Critical Go/No-Go Finding**: The mandatory non-expert VRAM footprint is **~88.03 GiB in FP16/BF16**, which exceeds the 32GB VRAM of the RTX 5090 workstation. This means the dense/shared portion alone cannot fit alongside KV, CUDA workspace, and an expert L1 cache on a 32GB GPU. The architecture **requires dense-layer offload or lower-bit dense kernels** before expert tiering can proceed.
 
 **Deliverable**: Phase 0 report with six mandatory answers before touching runtime code:
 - exact mandatory non-expert VRAM footprint;
@@ -168,11 +170,12 @@ router + cache state → different expert IDs
 **Goal**: Anticipate expert demands and prefetch warm/cold experts before they are needed.
 
 **Tasks:**
-1. Implement router lookahead to predict upcoming expert activations based on context patterns.
-2. Build asynchronous prefetch pipeline for warm experts (RAM L2) and cold experts (NVMe L3).
-3. Optimize I/O overlap with computation to hide NVMe latency.
-4. Measure useful-prefetch ratio and wasted-prefetch bytes metrics.
-5. Tune prefetch depth and lookahead window based on telemetry data.
+1. Start with evidence-based prefetch: next-use prediction from recent expert recurrence; persistent hot-set prefetch; layer-wise transition statistics; co-activation sets.
+2. Only later implement learned/predictive lookahead (router lookahead based on context patterns is too magical as exact router results for future layers depend on hidden state not yet computed).
+3. Build asynchronous prefetch pipeline for warm experts (RAM L2) and cold experts (NVMe L3).
+4. Optimize I/O overlap with computation to hide NVMe latency.
+5. Measure useful-prefetch ratio and wasted-prefetch bytes metrics.
+6. Tune prefetch depth and lookahead window based on telemetry data.
 
 **Deliverable**: Router lookahead and asynchronous prefetch infrastructure.
 
