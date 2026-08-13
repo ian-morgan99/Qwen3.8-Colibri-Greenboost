@@ -92,7 +92,7 @@ router + cache state → different expert IDs
 8. Produce the **maximum available expert-cache size** (not just simulate 8/12/16GB pools). If this number is only 1–3GB, the architecture needs dense-layer offload or lower-bit dense kernels before proceeding.
 9. Generate 48/64/72GB RAM-arena simulations to model L2 constraints.
 10. Run routing traces on representative coding prompts if the model can be executed anywhere.
-11. Estimate **zero-miss-step probability**, not just average expert hit rate (critical: a cache with 95% expert hits can still perform badly if nearly every generation step contains at least one miss).
+11. Estimate **stalling cache miss rate** and **milliseconds of exposed expert-transfer latency per generated token**, not just average expert hit rate or zero-miss-step probability (critical: a cache with high expert hits can still perform badly if the misses that occur are not hidden by N+1/N+2 asynchronous prefetch).
 12. **Output Qwen3.8→vLLM-Moet compatibility gate matrix**: `tensor → shape → dtype → expert role → existing kernel compatible? → conversion required?`
     - This is a **go/no-go gate**. If Qwen's K/N dimensions do not match one of the existing SM120 cubins, the project needs a kernel extension before cache work matters.
 
@@ -103,7 +103,7 @@ router + cache state → different expert IDs
 - actual free VRAM available for the L1 expert pool at 8K/32K/64K context;
 - expert tensor shape/kernel compatibility with existing `vLLM-Moet` SM120 kernels;
 - bytes per routed expert and active expert bytes per layer;
-- simulated zero-miss-step curves for candidate GPU/RAM cache sizes;
+- simulated stalling cache miss rates and exposed transfer latency for candidate GPU/RAM cache sizes;
 - whether existing expert-pack conversion can represent Qwen3.8 without changing model semantics beyond the separately measured quantisation loss.
 
 ---
@@ -199,7 +199,7 @@ router + cache state → different expert IDs
 **Goal**: Optimize pinned memory, transfer, allocation, and telemetry for maximum efficiency.
 
 **Tasks:**
-1. Implement pinned memory pools for zero-copy CPU→GPU transfers.
+1. Implement pinned host arenas supporting high-throughput asynchronous DMA and overlap with GPU compute (not CUDA mapped zero-copy access).
 2. Optimize NVMe→RAM and RAM→GPU data movement pipelines.
 3. Manage memory pools efficiently across VRAM, RAM, and NVMe tiers.
 4. Implement low-overhead telemetry collection for transfer efficiency and bottlenecks.
@@ -243,7 +243,7 @@ The following metrics must be implemented and monitored throughout all phases:
 1. **L1 hit rate** (VRAM hot set)
 2. **L2 hit rate** (RAM arena)
 3. **L3 fetch rate** (NVMe pack store)
-4. **zero-miss-step percentage** (critical: drives decode performance more strongly than headline token→expert hit percentage)
+4. **stalling cache miss rate** (critical: drives decode performance more strongly than headline token→expert hit percentage; measures milliseconds of exposed expert-transfer latency per generated token)
 5. **replay percentage**
 6. **unique expert misses/step**
 7. **bytes NVMe→RAM/token**
