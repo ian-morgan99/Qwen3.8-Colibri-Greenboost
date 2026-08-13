@@ -78,22 +78,31 @@ router + cache state → different expert IDs
 
 ## 4. Detailed Implementation Phases (Phases 0-9)
 
-### Phase 0 — Exact Physical Inventory
-**Goal**: Prove the tensor numbers before any implementation begins.
+### Phase 0 — Exact Physical Inventory and Compatibility Gate
+**Goal**: Prove the tensor numbers and establish hard compatibility gates before any runtime implementation begins.
 
 **Tasks:**
-1. Parse every Qwen3.8 tensor from the released checkpoint.
+1. Parse every Qwen3.8 tensor from the released checkpoint or GGUF.
 2. Classify each tensor as: dense/shared / router / routed-expert / KV-related.
 3. Record stored dtype and byte size for each tensor.
 4. Calculate expert size per layer.
 5. Calculate the exact permanently resident non-expert footprint (dense/shared/router/embeddings).
 6. Calculate the active expert bytes per layer/token.
-7. Generate 8/12/16GB GPU-cache simulations to model L1 VRAM constraints.
-8. Generate 48/64/72GB RAM-arena simulations to model L2 constraints.
-9. Run routing traces on representative coding prompts if the model can be executed anywhere.
-10. Estimate **zero-miss-step probability**, not just average expert hit rate (critical: a cache with 95% expert hits can still perform badly if nearly every generation step contains at least one miss).
+7. **Compute mandatory non-expert VRAM footprint**: `VRAM = mandatory dense/shared + router + KV(min context) + CUDA workspace + expert cache`
+8. Produce the **maximum available expert-cache size** (not just simulate 8/12/16GB pools). If this number is only 1–3GB, the architecture needs dense-layer offload or lower-bit dense kernels before proceeding.
+9. Generate 48/64/72GB RAM-arena simulations to model L2 constraints.
+10. Run routing traces on representative coding prompts if the model can be executed anywhere.
+11. Estimate **zero-miss-step probability**, not just average expert hit rate (critical: a cache with 95% expert hits can still perform badly if nearly every generation step contains at least one miss).
+12. **Output Qwen3.8→vLLM-Moet compatibility gate matrix**: `tensor → shape → dtype → expert role → existing kernel compatible? → conversion required?`
+    - This is a **go/no-go gate**. If Qwen's K/N dimensions do not match one of the existing SM120 cubins, the project needs a kernel extension before cache work matters.
 
-**Deliverable**: Phase 1A report: "metadata inventory complete; physical tensor accounting pending."
+**Deliverable**: Phase 0 report with six mandatory answers before touching runtime code:
+- exact mandatory non-expert VRAM footprint;
+- actual free VRAM available for the L1 expert pool at 8K/32K/64K context;
+- expert tensor shape/kernel compatibility with existing `vLLM-Moet` SM120 kernels;
+- bytes per routed expert and active expert bytes per layer;
+- simulated zero-miss-step curves for candidate GPU/RAM cache sizes;
+- whether existing expert-pack conversion can represent Qwen3.8 without changing model semantics beyond the separately measured quantisation loss.
 
 ---
 
@@ -113,16 +122,17 @@ router + cache state → different expert IDs
 ---
 
 ### Phase 2 — Exact L1 GPU + L2 RAM Execution
-**Goal**: Prove bit/quality equivalence against an untiered reference for a small subset or representative layers.
+**Goal**: Prove tiered execution correctness and quantization quality against reference implementations for a small subset or representative layers.
 
 **Tasks:**
 1. Implement GPU L1 hot set residency for currently activated experts (up to 10 per token + shared expert).
 2. Implement RAM L2 arena for warm experts that do not fit in VRAM.
-3. Ensure bit/quality equivalence against untiered reference execution.
-4. Measure baseline L1 hit rate, L2 hit rate, and L3 fetch rate without prefetching.
-5. Validate SM120 MoE kernel execution with tiered expert weights.
+3. Ensure tiered execution is **bit-identical to the same quantized representation running fully resident**.
+4. Ensure the quantized representation separately passes **quality equivalence/regression thresholds** against the original model.
+5. Measure baseline L1 hit rate, L2 hit rate, and L3 fetch rate without prefetching.
+6. Validate SM120 MoE kernel execution with tiered expert weights.
 
-**Deliverable**: Working L1 GPU + L2 RAM execution with proven bit/quality equivalence.
+**Deliverable**: Working L1 GPU + L2 RAM execution with proven bit-identical equivalence to quantized reference and quality equivalence to original model.
 
 ---
 

@@ -1,3 +1,17 @@
+# ⚠️ SUPERSEDED — DO NOT IMPLEMENT
+
+**This document has been superseded by [`backend_colibri_vllm_moe_detailed_plan.md`](./backend_colibri_vllm_moe_detailed_plan.md).**
+
+The architecture described in this document conflates vLLM, GGUF/llama.cpp, and Colibri-style tiering in ways that are no longer recommended. Specifically:
+- Do not extend PagedAttention for expert tiering
+- Do not make routing memory-aware in the first implementation
+- Do not make GGUF support a prerequisite for the vLLM path
+- Do not treat Q2_K/Q3_K as further quantization
+
+**Please refer to `backend_colibri_vllm_moe_detailed_plan.md` for the current, approved architecture.**
+
+---
+
 # Backend Plan: Colibri/vLLM-MoE alongside Greenboost/TurboQuant, MOE/Expert Tensor Fit
 
 ## 1. Executive Summary
