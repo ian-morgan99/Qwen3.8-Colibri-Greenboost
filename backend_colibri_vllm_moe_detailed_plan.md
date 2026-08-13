@@ -230,7 +230,7 @@ router + cache state → different expert IDs
 1. Develop cache-aware routing logic that considers memory tiers when selecting experts.
 2. Ensure this feature is **off by default** to avoid changing model semantics prematurely.
 3. Allow fallback to exact expert IDs if cache-aware substitution degrades quality.
-4. Measure impact of cache-aware routing on zero-miss-step percentage and overall decode performance.
+4. Measure impact of cache-aware routing on stalling cache miss rate and overall decode performance.
 
 **Deliverable**: Experimental cache-aware routing module, off by default.
 

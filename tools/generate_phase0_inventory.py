@@ -151,7 +151,7 @@ def main():
 ## Next Steps
 - Validate Qwen3.8 expert tensor shapes against existing vLLM-Moet SM120 kernels
 - Calculate maximum available expert-cache size: VRAM_free = VRAM_total - mandatory_non_expert - KV(min context) - CUDA workspace
-- Simulate zero-miss-step curves for candidate GPU/RAM cache sizes
+- Simulate stalling cache miss rates and exposed transfer latency for candidate GPU/RAM cache sizes
 """
 
     report_path = Path("/home/beast/Documents/VSCode/Qwen3.8/artifacts/qwen38_phase0_inventory_report.md")

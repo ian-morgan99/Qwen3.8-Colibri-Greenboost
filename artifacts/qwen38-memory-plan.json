@@ -10,54 +10,54 @@
     "8GB": {
       "experts_fit": 5,
       "estimated_hit_rate": 0.013,
-      "estimated_zero_miss_step_prob": 0.0
+      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
     },
     "12GB": {
       "experts_fit": 8,
       "estimated_hit_rate": 0.0208,
-      "estimated_zero_miss_step_prob": 0.0
+      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
     },
     "16GB": {
       "experts_fit": 11,
       "estimated_hit_rate": 0.0286,
-      "estimated_zero_miss_step_prob": 0.0
+      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
     },
     "20GB": {
       "experts_fit": 13,
       "estimated_hit_rate": 0.0339,
-      "estimated_zero_miss_step_prob": 0.0
+      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
     },
     "24GB": {
       "experts_fit": 16,
       "estimated_hit_rate": 0.0417,
-      "estimated_zero_miss_step_prob": 0.0
+      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
     }
   },
   "ram_arena_simulations": {
     "48GB": {
       "experts_fit": 33,
       "estimated_hit_rate": 0.0027,
-      "estimated_zero_miss_step_prob": 0.0021
+      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
     },
     "64GB": {
       "experts_fit": 44,
       "estimated_hit_rate": 0.0036,
-      "estimated_zero_miss_step_prob": 0.0029
+      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
     },
     "72GB": {
       "experts_fit": 50,
       "estimated_hit_rate": 0.0041,
-      "estimated_zero_miss_step_prob": 0.0033
+      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
     },
     "96GB": {
       "experts_fit": 67,
       "estimated_hit_rate": 0.0055,
-      "estimated_zero_miss_step_prob": 0.0044
+      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
     },
     "128GB": {
       "experts_fit": 89,
       "estimated_hit_rate": 0.0072,
-      "estimated_zero_miss_step_prob": 0.0058
+      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
     }
   }
 }
