@@ -53,18 +53,18 @@ RAM L2 Arena Simulations:
 
 ### Real Qwen3.8 Routing Traces (with N+1 Prefetch)
 
-Based on real Qwen3.8 routing traces (32,000 expert requests simulated with N+1 prefetch):
+Based on real Qwen3.8 routing traces (184,000 expert requests simulated with N+1 prefetch):
 
-- **L1 (VRAM) hit rate**: 11.42%
-- **L2 (RAM) hit rate**: 61.51%
-- **L3 (NVMe) fetch rate**: 25.60%
-- **N+1 prefetch hide rate**: 1.47%
-- **Stalling miss rate**: 25.60%
+- **L1 (VRAM) hit rate**: 4.30%
+- **L2 (RAM) hit rate**: 71.98%
+- **L3 (NVMe) fetch rate**: 22.99%
+- **N+1 prefetch hide rate**: 0.73%
+- **Stalling miss rate**: 22.99%
 
 Expert bytes by source:
-- From VRAM (L1): ~5,980 GB
-- From RAM (L2): ~28,540 GB
-- From NVMe (L3): ~11,880 GB
+- From VRAM (L1): ~13,418 GB
+- From RAM (L2): ~192,053 GB
+- From NVMe (L3): ~61,329 GB
 
 ## Key Observations
 

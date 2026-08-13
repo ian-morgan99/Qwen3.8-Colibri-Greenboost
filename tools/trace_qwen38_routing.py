@@ -182,7 +182,7 @@ def simulate_cache_with_trace(traces: List[Dict[str, Any]], gpu_l1_size_gb: floa
 
 def main():
     print("Generating real Qwen3.8 routing traces...")
-    traces = simulate_routing_trace(num_layers=32, num_experts=95, top_k=5)
+    traces = simulate_routing_trace(num_layers=92, num_experts=512, top_k=10)
     
     print("Simulating expert cache with N+1 prefetch...")
     # Simulate with realistic GPU L1 and RAM L2 sizes given ~22GB dense footprint

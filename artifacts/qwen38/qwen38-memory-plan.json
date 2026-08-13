@@ -24,13 +24,13 @@
   },
   "traffic": {
     "cold_nvme_seconds_per_active_token_estimate": 1.036,
-    "note": "Traffic assumes every active expert is cold and ignores overlap, compression, and filesystem cache. Real routing traces show L1 (VRAM) hit rate: 11.42%, L2 (RAM) hit rate: 61.51%, L3 (NVMe) fetch rate: 25.60%, N+1 prefetch hide rate: 1.47%, Stalling miss rate: 25.60%."
+    "note": "Traffic assumes every active expert is cold and ignores overlap, compression, and filesystem cache. Real routing traces show L1 (VRAM) hit rate: 4.30%, L2 (RAM) hit rate: 71.98%, L3 (NVMe) fetch rate: 22.99%, N+1 prefetch hide rate: 0.73%, Stalling miss rate: 22.99%."
   },
   "routing_trace_results": {
-    "l1_vram_hit_rate_pct": 11.42,
-    "l2_ram_hit_rate_pct": 61.51,
-    "l3_nvme_fetch_rate_pct": 25.60,
-    "n_plus_1_prefetch_hide_rate_pct": 1.47,
-    "stalling_miss_rate_pct": 25.60
+    "l1_vram_hit_rate_pct": 4.30,
+    "l2_ram_hit_rate_pct": 71.98,
+    "l3_nvme_fetch_rate_pct": 22.99,
+    "n_plus_1_prefetch_hide_rate_pct": 0.73,
+    "stalling_miss_rate_pct": 22.99
   }
 }
