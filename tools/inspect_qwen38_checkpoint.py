@@ -107,7 +107,8 @@ def main():
     }
     
     # Save layout JSON
-    with open('artifacts/qwen38-layout.json', 'w') as f:
+    os.makedirs('artifacts/qwen38', exist_ok=True)
+    with open('artifacts/qwen38/qwen38-layout.json', 'w') as f:
         json.dump(layout_data, f, indent=2)
         
     print(f"Classified {len(weight_map)} tensors into categories:")

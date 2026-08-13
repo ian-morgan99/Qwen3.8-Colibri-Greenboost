@@ -74,10 +74,12 @@ def main():
     simulation_results = simulate_stalling_cache_miss_rates(gpu_cache_sizes, ram_arena_sizes)
     
     # Save memory plan JSON
-    with open('artifacts/qwen38-memory-plan.json', 'w') as f:
+    import os
+    os.makedirs('artifacts/qwen38', exist_ok=True)
+    with open('artifacts/qwen38/qwen38-memory-plan.json', 'w') as f:
         json.dump(simulation_results, f, indent=2)
         
-    print("Expert cache simulation complete. Results saved to artifacts/qwen38-memory-plan.json")
+    print("Expert cache simulation complete. Results saved to artifacts/qwen38/qwen38-memory-plan.json")
     print("\nGPU L1 Cache Simulations:")
     for size, data in simulation_results['gpu_cache_simulations'].items():
         print(f"  {size}: fits {data['experts_fit']} experts, hit_rate={data['estimated_hit_rate']}")
