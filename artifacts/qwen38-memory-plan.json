@@ -1,0 +1,63 @@
+{
+  "configuration": {
+    "num_layers": 96,
+    "num_experts_per_layer": 128,
+    "num_active_experts": 8,
+    "bytes_per_routed_expert_q1_0": 1536000000,
+    "active_expert_bytes_per_layer": 12288000000
+  },
+  "gpu_cache_simulations": {
+    "8GB": {
+      "experts_fit": 5,
+      "estimated_hit_rate": 0.013,
+      "estimated_zero_miss_step_prob": 0.0
+    },
+    "12GB": {
+      "experts_fit": 8,
+      "estimated_hit_rate": 0.0208,
+      "estimated_zero_miss_step_prob": 0.0
+    },
+    "16GB": {
+      "experts_fit": 11,
+      "estimated_hit_rate": 0.0286,
+      "estimated_zero_miss_step_prob": 0.0
+    },
+    "20GB": {
+      "experts_fit": 13,
+      "estimated_hit_rate": 0.0339,
+      "estimated_zero_miss_step_prob": 0.0
+    },
+    "24GB": {
+      "experts_fit": 16,
+      "estimated_hit_rate": 0.0417,
+      "estimated_zero_miss_step_prob": 0.0
+    }
+  },
+  "ram_arena_simulations": {
+    "48GB": {
+      "experts_fit": 33,
+      "estimated_hit_rate": 0.0027,
+      "estimated_zero_miss_step_prob": 0.0021
+    },
+    "64GB": {
+      "experts_fit": 44,
+      "estimated_hit_rate": 0.0036,
+      "estimated_zero_miss_step_prob": 0.0029
+    },
+    "72GB": {
+      "experts_fit": 50,
+      "estimated_hit_rate": 0.0041,
+      "estimated_zero_miss_step_prob": 0.0033
+    },
+    "96GB": {
+      "experts_fit": 67,
+      "estimated_hit_rate": 0.0055,
+      "estimated_zero_miss_step_prob": 0.0044
+    },
+    "128GB": {
+      "experts_fit": 89,
+      "estimated_hit_rate": 0.0072,
+      "estimated_zero_miss_step_prob": 0.0058
+    }
+  }
+}

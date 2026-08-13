@@ -1,0 +1,37 @@
+{
+  "kernel_compatibility": {
+    "vllm_moet_sm120_kernels": {
+      "status": "requires_verification",
+      "notes": "Qwen3.8 expert tensor shapes, activation functions, quant metadata and MoE layout must be verified against existing SM120 cubins proven for DeepSeek/GLM models.",
+      "compatibility_matrix_template": [
+        {
+          "tensor_category": "routed_expert_w1",
+          "expected_shape_pattern": "layer_id.experts.[expert_id].w1",
+          "dtype": "to_be_determined_from_checkpoint",
+          "existing_kernel_compatible": "pending_verification",
+          "conversion_required": "pending_verification"
+        },
+        {
+          "tensor_category": "routed_expert_w2",
+          "expected_shape_pattern": "layer_id.experts.[expert_id].w2",
+          "dtype": "to_be_determined_from_checkpoint",
+          "existing_kernel_compatible": "pending_verification",
+          "conversion_required": "pending_verification"
+        },
+        {
+          "tensor_category": "routed_expert_w3",
+          "expected_shape_pattern": "layer_id.experts.[expert_id].w3",
+          "dtype": "to_be_determined_from_checkpoint",
+          "existing_kernel_compatible": "pending_verification",
+          "conversion_required": "pending_verification"
+        }
+      ]
+    },
+    "go_no_go_gate_requirements": [
+      "Verify Qwen3.8 K/N dimensions match existing SM120 cubin expectations",
+      "Confirm expert activation function compatibility (e.g., SwiGLU, GeGLU)",
+      "Validate quant metadata format for Q1_0 or INT4/NF4 expert packs",
+      "Ensure MoE layout (num_experts, num_active_experts, routing strategy) aligns with vLLM-Moet expectations"
+    ]
+  }
+}
