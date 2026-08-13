@@ -1,0 +1,16 @@
+{
+  "total_expert_requests": 32000,
+  "l1_hits": 3654,
+  "l2_hits": 19683,
+  "l3_fetches": 8193,
+  "stalling_misses": 8193,
+  "prefetched_hits": 470,
+  "expert_bytes_from_vram": 5979.799999999553,
+  "expert_bytes_from_ram": 28540.350000009486,
+  "expert_bytes_from_nvme": 11879.850000001126,
+  "l1_hit_rate": 0.1141875,
+  "l2_hit_rate": 0.61509375,
+  "l3_fetch_rate": 0.25603125,
+  "prefetch_hide_rate": 0.0146875,
+  "stalling_miss_rate": 0.25603125
+}
