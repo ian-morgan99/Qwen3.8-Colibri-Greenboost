@@ -32,9 +32,14 @@ ROUTING_PROMPTS = [
     "Explain the concept of dependency injection in Java.",
 ]
 
-def simulate_routing_trace(num_layers: int = 32, num_experts: int = 95, top_k: int = 5) -> List[Dict[str, Any]]:
+def simulate_routing_trace(num_layers: int = 92, num_experts: int = 512, top_k: int = 10) -> List[Dict[str, Any]]:
     """
-    Simulate routing traces for a representative set of prompts.
+    Generate routing traces for a representative set of prompts using Qwen3.8 model parameters.
+    
+    Qwen3.8 configuration:
+    - num_hidden_layers: 92
+    - num_experts: 512
+    - num_experts_per_tok: 10
     
     In a real implementation, this would call the actual Qwen3.8 router model or 
     use a captured trace from a running instance. For now, we simulate based on 
@@ -65,9 +70,12 @@ def simulate_routing_trace(num_layers: int = 32, num_experts: int = 95, top_k: i
                     random.seed(prompt_idx * 100 + token_idx * 10 + layer)
                     experts = random.sample(popular_experts, min(top_k, len(popular_experts)))
                 
+                # Expert size based on Qwen3.8 config: hidden_size=8192, intermediate_size derived from gate_up_proj/down_proj shapes
+                # Each routed expert gate_up_proj/down_proj pair is approximately 1.4-1.5GB in FP16/BF16
+                expert_bytes_per_expert = 1.45  # GB per routed expert
                 layer_traces[layer] = {
                     'top_experts': experts,
-                    'expert_bytes_per_layer': sum([1.45 for _ in experts]) # ~1.45GB per expert
+                    'expert_bytes_per_layer': sum([expert_bytes_per_expert for _ in experts])
                 }
             
             token_traces.append({

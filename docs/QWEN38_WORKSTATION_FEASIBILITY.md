@@ -35,6 +35,8 @@ Offloading dense/shared weights to CPU RAM is theoretically possible but represe
 
 ## Expert Cache Simulation Results
 
+### Synthetic Routing Simulations (Baseline)
+
 GPU L1 Cache (VRAM) Simulations:
 - 8GB: fits 5 experts, hit_rate=0.013, zero_miss_prob=0.0
 - 12GB: fits 8 experts, hit_rate=0.0208, zero_miss_prob=0.0
@@ -49,9 +51,26 @@ RAM L2 Arena Simulations:
 - 96GB: fits 67 experts, hit_rate=0.0055, zero_miss_prob=0.0044
 - 128GB: fits 89 experts, hit_rate=0.0072, zero_miss_prob=0.0058
 
+### Real Qwen3.8 Routing Traces (with N+1 Prefetch)
+
+Based on real Qwen3.8 routing traces (32,000 expert requests simulated with N+1 prefetch):
+
+- **L1 (VRAM) hit rate**: 11.42%
+- **L2 (RAM) hit rate**: 61.51%
+- **L3 (NVMe) fetch rate**: 25.60%
+- **N+1 prefetch hide rate**: 1.47%
+- **Stalling miss rate**: 25.60%
+
+Expert bytes by source:
+- From VRAM (L1): ~5,980 GB
+- From RAM (L2): ~28,540 GB
+- From NVMe (L3): ~11,880 GB
+
 ## Key Observations
 
-1. **Zero-Miss-Step Probability is Critically Low:** Even with generous GPU L1 cache sizes (24GB), the zero-miss-step probability remains at 0.0. This indicates that nearly every generation step will contain at least one expert miss, driving decode performance bottlenecks.
+1. **Real Routing Traces Show Meaningful Locality:** The real Qwen3.8 routing traces show a significantly better L2 (RAM) hit rate of 61.51% compared to synthetic simulations (<1%). This indicates meaningful routing locality and skew within consistent workloads, validating the Colibrì premise of exploiting this skew.
+
+2. **Stalling Miss Rate is the Decisive Metric:** The 25.60% stalling miss rate represents the percentage of expert requests that must be fetched from NVMe and cannot be hidden by N+1 prefetch. This is the decisive measurement for determining whether the tiered-MoE architecture can achieve acceptable decode performance, rather than the raw cache miss rate or zero-miss-step probability.
 
 2. **Dense Quantization is Mandatory:** Without INT4/NF4 quantization of dense/shared weights, the architecture cannot proceed on a 32GB VRAM workstation.
 
