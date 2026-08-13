@@ -1,0 +1,23 @@
+{
+  "assumptions": {
+    "vram_gib": 32,
+    "ram_gib": 96,
+    "nvme_read_gib_per_second": 7
+  },
+  "bytes": {
+    "dense_shared_resident": 314572800000,
+    "routed_experts": 179430400000,
+    "total_tensor_storage": 494003200000,
+    "expert_size_average": 1761018750,
+    "active_expert_bytes_per_token_estimate": 14088150000
+  },
+  "capacity": {
+    "gpu_expert_cache_bytes_after_dense": 0,
+    "gpu_experts_fit_after_dense": 0,
+    "ram_experts_fit": 54
+  },
+  "traffic": {
+    "cold_nvme_seconds_per_active_token_estimate": 1.036,
+    "note": "Traffic assumes every active expert is cold and ignores overlap, compression, and filesystem cache."
+  }
+}

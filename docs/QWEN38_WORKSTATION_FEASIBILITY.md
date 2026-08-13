@@ -70,7 +70,7 @@ Expert bytes by source:
 
 1. **Real Routing Traces Show Meaningful Locality:** The real Qwen3.8 routing traces show a significantly better L2 (RAM) hit rate of 61.51% compared to synthetic simulations (<1%). This indicates meaningful routing locality and skew within consistent workloads, validating the Colibrì premise of exploiting this skew.
 
-2. **Stalling Miss Rate is the Decisive Metric:** The 25.60% stalling miss rate represents the percentage of expert requests that must be fetched from NVMe and cannot be hidden by N+1 prefetch. This is the decisive measurement for determining whether the tiered-MoE architecture can achieve acceptable decode performance, rather than the raw cache miss rate or zero-miss-step probability.
+2. **Stalling Miss Rate is the Decisive Metric:** The 25.60% stalling miss rate represents the percentage of expert requests that must be fetched from NVMe and cannot be hidden by N+1 prefetch. This is the decisive measurement for determining whether the tiered-MoE architecture can achieve acceptable decode performance, rather than the raw cache miss rate or synthetic zero-miss metrics.
 
 2. **Dense Quantization is Mandatory:** Without INT4/NF4 quantization of dense/shared weights, the architecture cannot proceed on a 32GB VRAM workstation.
 

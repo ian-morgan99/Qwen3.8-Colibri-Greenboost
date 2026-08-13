@@ -92,7 +92,7 @@ router + cache state → different expert IDs
 8. Produce the **maximum available expert-cache size** (not just simulate 8/12/16GB pools). If this number is only 1–3GB, the architecture needs dense-layer offload or lower-bit dense kernels before proceeding.
 9. Generate 48/64/72GB RAM-arena simulations to model L2 constraints.
 10. Run routing traces on representative coding prompts if the model can be executed anywhere.
-11. Estimate **stalling cache miss rate** and **milliseconds of exposed expert-transfer latency per generated token**, not just average expert hit rate or zero-miss-step probability (critical: a cache with high expert hits can still perform badly if the misses that occur are not hidden by N+1/N+2 asynchronous prefetch).
+11. Estimate **stalling cache miss rate** and **milliseconds of exposed expert-transfer latency per generated token**, not just average expert hit rate or synthetic zero-miss metrics (critical: a cache with high expert hits can still perform badly if the misses that occur are not hidden by N+1/N+2 asynchronous prefetch).
 12. **Output Qwen3.8→vLLM-Moet compatibility gate matrix**: `tensor → shape → dtype → expert role → existing kernel compatible? → conversion required?`
     - This is a **go/no-go gate**. If Qwen's K/N dimensions do not match one of the existing SM120 cubins, the project needs a kernel extension before cache work matters.
 
