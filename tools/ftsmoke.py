@@ -105,8 +105,8 @@ def main() -> int:
                 break
             if ttft is None:
                 ttft = time.monotonic() - t0
-            delta = json.loads(data)["choices"][0].get("delta", {}).get("content")
-            if delta:
+            delta = json.loads(data)["choices"][0].get("delta", {})
+            if delta.get("content") or delta.get("reasoning_content"):
                 chunks += 1
     ok &= check("streaming completion", chunks >= 3,
                 f"{chunks} content chunks, TTFT={ttft:.2f}s" if ttft else "no tokens")
