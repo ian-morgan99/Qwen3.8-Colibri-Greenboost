@@ -1,0 +1,38 @@
+From ecee0aadf16e107fc8ed3a1176f5bae16461d0da Mon Sep 17 00:00:00 2001
+From: Beast <user@example.com>
+Date: Sun, 23 Aug 2026 14:43:27 +0100
+Subject: [PATCH] Register Qwen3_5MoeForCausalLM arch name for qwen3_5_moe
+ package
+
+Current-gen Qwen3.8 checkpoints (model_type qwen3_5_moe_text, e.g.
+RedHatAI/Qwen3.8-2.4T-A95B-NVFP4) report architectures
+['Qwen3_5MoeForCausalLM'], which was missing from _MODEL_REGISTRY and
+caused get_model_spec to raise 'Model architecture not supported'.
+Map it to the existing qwen3_5_moe implementation, same as the
+ConditionalGeneration variants.
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+---
+ python/freetoken/models/register.py | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/python/freetoken/models/register.py b/python/freetoken/models/register.py
+index 0c033ca..78aeccb 100644
+--- a/python/freetoken/models/register.py
++++ b/python/freetoken/models/register.py
+@@ -65,6 +65,12 @@ _MODEL_REGISTRY: dict[str, ModelSpec] = {
+         "freetoken.models.qwen3_5_moe",
+         "Qwen3_5MoEForCausalLM",
+     ),
++    # Text-only CausalLM arch reported by current-gen Qwen3.8 checkpoints (model_type
++    # qwen3_5_moe_text, e.g. RedHatAI/Qwen3.8-2.4T-A95B-NVFP4). Same implementation as above.
++    "Qwen3_5MoeForCausalLM": ModelSpec(
++        "freetoken.models.qwen3_5_moe",
++        "Qwen3_5MoEForCausalLM",
++    ),
+     # Muse-Glimmer-30B (model_type muse_glimmer): multimodal wrapper config (text tower in
+     # text_config, weights under model.language_model.); served text-only. Dense gated GQA
+     # with a [SWA x3, full] pattern -- full layers are NoPE -- weightless qk norms, centered
+-- 
+2.43.0
+
