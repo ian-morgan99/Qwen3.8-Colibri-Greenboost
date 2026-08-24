@@ -49,6 +49,28 @@ fixed 256-token generation prompt, and record decode tok/s, TTFT, and VRAM.
   offload (`--moe-cpu-layers`) and expert caching are tunable, and neither
   applies to dense models.
 
+## T1/T2 memory routing & pre-2.4T checklist
+
+FreeToken routes intelligently between VRAM (T1) and host RAM (T2); there is
+no T3 (NVMe) tier. For MoE models:
+
+- `--moe-backend auto` picks the offload family, choosing `hybrid` when an
+  `ft bench bw` profile recommends it.
+- `--moe-cache-auto` sizes the GPU expert cache from free VRAM (KV gets
+  `--kv-reserve-tokens` as a floor).
+- `--expert-load auto` falls back from parallel to serial RAM reads when RAM
+  is tight.
+- `--moe-hybrid-max-fetch -1` splits decode-step cache misses between PCIe
+  fetch and CPU compute using the benched bandwidth ratio.
+
+**Before the 2.4T model arrives:**
+- [ ] Run `ft bench bw --model <path>` once to create the machine bandwidth
+      profile so hybrid auto-routing works optimally.
+- [ ] Serve with `--moe-backend auto --moe-cache-auto`.
+- [ ] Note: ~440 GB Q1_0 exceeds 91 GB host RAM — even with hybrid offload,
+      expect heavy CPU compute of misses. Evaluate mgoin pruned75 (~436 GB)
+      vs smaller quants; no T3 tier exists to spill to NVMe.
+
 ## Not yet exposed (dense model — likely irrelevant)
 
 MoE flags (`--moe-cache-*`, `--expert-load`, `--moe-cpu-layers`) apply to MoE

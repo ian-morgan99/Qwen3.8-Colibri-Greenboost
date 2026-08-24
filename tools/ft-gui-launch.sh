@@ -24,8 +24,8 @@ if [[ -n "$(server_pids)" ]]; then
   exit 0
 fi
 
-# --- option picker ---
-CHOICE=$($Z --width 640 --forms --title="Start FreeToken — Huihui Qwen3.8 27B NVFP4" --text="Server options" \
+# --- option picker: page 1 (basic) ---
+CHOICE=$($Z --width 640 --forms --title="Start FreeToken — Huihui Qwen3.8 27B NVFP4 (1/2)" --text="Basic options" \
   --add-combo="NVFP4 backend" --combo-values="triton|flashinfer|marlin|auto" \
   --add-combo="Attention backend" --combo-values="auto (fi)|fi|fa3|triton" \
   --add-entry="Port (default 8001)" \
@@ -33,12 +33,21 @@ CHOICE=$($Z --width 640 --forms --title="Start FreeToken — Huihui Qwen3.8 27B 
   --add-combo="Max concurrent requests" --combo-values="4 (default)|1|2|8" \
   --add-combo="Reasoning parser" --combo-values="qwen3 (default)|auto|off|deepseekv32|gpt_oss|glm|minimax|minimax_m3|muse_glimmer|gemma4" \
   --add-entry="Temperature (blank = model default)" \
+  --separator="|" ) || exit 0
+
+# --- option picker: page 2 (advanced) ---
+CHOICE2=$($Z --width 640 --forms --title="Start FreeToken — advanced (2/2)" --text="Advanced options" \
   --add-combo="KV cache strategy" --combo-values="radix (default)|naive" \
   --add-combo="Weight dtype" --combo-values="bfloat16 (default)|float16|float32|auto" \
   --add-combo="MoE CPU layers (offload)" --combo-values="none (all GPU)|0.25|0.5|4|8|16" \
+  --add-entry="Memory ratio (default 0.9)" \
+  --add-entry="Max output tokens (blank = none)" \
+  --add-combo="MoE expert cache" --combo-values="off (default)|auto|25%|50%|75%|100%" \
+  --add-combo="Tensor parallel size" --combo-values="1 (default)|2|4" \
   --separator="|" ) || exit 0
 
-IFS='|' read -r NVFP4 ATTN PORT CTX CONC REASON TEMP CACHETYPE DTYPE CPULAYERS <<<"$CHOICE"
+IFS='|' read -r NVFP4 ATTN PORT CTX CONC REASON TEMP <<<"$CHOICE"
+IFS='|' read -r CACHETYPE DTYPE CPULAYERS MEMRATIO MAXOUT MOECACHE TPSIZE <<<"$CHOICE2"
 [[ -n "$PORT" ]] || PORT=8001
 [[ "$PORT" =~ ^[0-9]+$ ]] || PORT=8001
 
@@ -71,6 +80,23 @@ DTYPE_ARG=()
 CPU_ARG=()
 [[ "$CPULAYERS" == "none"* ]] || CPU_ARG=(--moe-cpu-layers "$CPULAYERS")
 
+MEM_ARG=()
+if [[ -n "$MEMRATIO" ]] && python3 -c "import sys; m=float(sys.argv[1]); sys.exit(0 if 0<m<=1 else 1)" "$MEMRATIO" 2>/dev/null; then
+  MEM_ARG=(--memory-ratio "$MEMRATIO")
+fi
+
+MAXOUT_ARG=()
+[[ -n "$MAXOUT" && "$MAXOUT" =~ ^[0-9]+$ ]] && MAXOUT_ARG=(--max-output-tokens "$MAXOUT")
+
+MOECACHE_ARG=()
+case "$MOECACHE" in
+  auto) MOECACHE_ARG=(--moe-cache-auto) ;;
+  *%) MOECACHE_ARG=(--moe-cache-rate "0.${MOECACHE%\%}") ;;
+esac
+
+TP_ARG=()
+[[ "$TPSIZE" == 1* ]] || TP_ARG=(--tensor-parallel-size "${TPSIZE%% *}")
+
 LOG_FILE="$PROJECT_DIR/models-download/ftserve_${PORT}.log"
 
 # VRAM guard
@@ -89,6 +115,7 @@ nohup "$VENV/bin/ft" serve --model-path "$MODEL_DIR" \
   --nvfp4-backend "$NVFP4" "${ATTN_ARG[@]}" "${CTX_ARG[@]}" \
   --max-running-requests "${CONC%% *}" \
   "${REASON_ARG[@]}" "${CACHE_ARG[@]}" "${DTYPE_ARG[@]}" "${CPU_ARG[@]}" \
+  "${MEM_ARG[@]}" "${MAXOUT_ARG[@]}" "${MOECACHE_ARG[@]}" "${TP_ARG[@]}" \
   >>"$LOG_FILE" 2>&1 &
 SRV_PID=$!
 
