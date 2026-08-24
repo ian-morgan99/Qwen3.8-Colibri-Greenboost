@@ -28,13 +28,14 @@ fi
 CHOICE=$($Z --forms --title="Start FreeToken — Huihui Qwen3.8 27B NVFP4" --text="Server options" \
   --add-combo="NVFP4 backend" --combo-values="triton|flashinfer|marlin|auto" \
   --add-combo="Attention backend" --combo-values="auto (fi)|fi|fa3|triton" \
-  --add-entry="Port" --entry-value="$PORT" \
+  --add-entry="Port (default 8001)" \
   --add-combo="Context length" --combo-values="default (262k)|8192|16384|32768|65536|131072" \
   --add-combo="Max concurrent requests" --combo-values="4 (default)|1|2|8" \
   --separator="|" ) || exit 0
 
 IFS='|' read -r NVFP4 ATTN PORT CTX CONC <<<"$CHOICE"
 [[ -n "$PORT" ]] || PORT=8001
+[[ "$PORT" =~ ^[0-9]+$ ]] || PORT=8001
 
 ATTN_FLAG="${ATTN%% *}"   # strip " (fi)" style suffixes
 [[ "$ATTN_FLAG" == "auto"* ]] && ATTN_ARG=() || ATTN_ARG=(--attention-backend "$ATTN_FLAG")
