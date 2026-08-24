@@ -105,6 +105,33 @@ Recommendation: let the current download finish (it doubles as LM Studio
 mmap test material), but plan the real FreeToken target as a ≤90 GB quant or
 pruned NVFP4 release. Revisit when RedHatAI/mgoin publish smaller variants.
 
+## GreenBoost T3 question — source-verified answer (2026)
+
+**Does the GreenBoost shim give us T1/T2/T3 (NVMe tier) instead of just
+T1/T2? No.** The original Colibrì/GreenBoost design
+(see `docs/QWEN38_WORKSTATION_FEASIBILITY.md`) specified an L3/NVMe tier and
+simulated it (L1 hit 4.30%, L2 hit 71.98%, L3 fetch 22.99% stalling misses),
+but that tier was **never implemented in FreeToken**. Verified from the
+installed source (`freetoken-env/.venv/.../freetoken/`):
+
+| Component | What the code actually does |
+|---|---|
+| `moe/host_banks.py` | `HostBank` = **anonymous** mmap (`mmap.mmap(-1, asize)`) — address space only, filled once at load via O_DIRECT preadv, then `cudaHostRegister`'d (pin-after-fill). Not file-backed; no runtime disk reads during inference. |
+| `moe/host_banks.py` `HostResidency.PAGEABLE` / `lock()` | Exists as an enum value but movement paths are explicitly "not implemented"; `lock()` raises `NotImplementedError`. |
+| `checkpoint/ftw.py` | FTW format is a **load-time** optimization: chunked multi-threaded O_DIRECT reads into host banks; banks must be RAM-resident thereafter. The file-backed `mmap` in `_map()` is only used by the non-O_DIRECT reader path to memcpy into banks — still load-time. |
+| `moe/offload_cache.py` | GPU-side LRU slot cache over experts backed by host banks; `policy_ids = {"lru": 0}` — no prefetch/paging policy beyond LRU. |
+| `moe/expert_banks.py` | Low-RAM fallback drops parallel→serial build but banks still must fit resident RAM (`_host_ram_fits_parallel` checks MemAvailable vs banks + one shard). |
+| `engine/cache_budget.py` | Auto-sizing splits **GPU** VRAM between MoE slots and KV pages only; host RAM is assumed sufficient for banks, never budgeted as a tier. |
+
+Conclusion: FreeToken's offload is strictly a two-tier system — pinned host
+RAM (T2) feeding a GPU expert slot cache (T1). There is no file-backed mmap,
+no runtime disk paging, no pageable-bank eviction. A 397 GB model cannot run
+natively regardless of shim/config. To get a real T3 you would have to write
+one: the most plausible patch is a file-backed-mmap variant of `HostBank`
+(the PAGEABLE plumbing partially exists) plus a paging policy in
+`OffloadMoeCache` — a genuine contribution upstream, but not something a
+flag enables today.
+
 ## Research findings (2025–2026 survey, incl. local-LLM second opinion)
 
 Second opinion from local Qwen3.8-8B confirmed the core math and added
