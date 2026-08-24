@@ -30,6 +30,24 @@ fixed 256-token generation prompt, and record decode tok/s, TTFT, and VRAM.
 - Port
 - Context length: default (262k) / 8192 … 131072
 - Max concurrent requests: 1 / 2 / 4 / 8
+- Reasoning parser: qwen3 (default) / auto / off / deepseekv32 / gpt_oss / glm /
+  minimax / minimax_m3 / muse_glimmer / gemma4
+- Temperature: blank = model generation_config default; a value switches the
+  server to `--sampling-defaults none` (per-request `temperature` in the API
+  body then governs). NOTE: FreeToken has no server-side default-temperature
+  flag; temperature is otherwise always per-request.
+- KV cache strategy: radix (default) / naive
+- Weight dtype: bfloat16 (default) / float16 / float32 / auto
+- MoE CPU layers: none (all GPU) / fraction or layer count — MoE-only, no
+  effect on this dense model; kept for the future 2.4T MoE target
+
+**Not supported by FreeToken (cannot be exposed):**
+- *Reasoning budget / effort* — no such flag exists. Reasoning length is
+  controlled per-request via the chat template / prompt, not the server.
+- *KV cache quantisation* — no `--kv-cache-dtype` flag; KV is fp/bf16 only.
+- *Number of experts* — fixed by the checkpoint architecture; only MoE CPU
+  offload (`--moe-cpu-layers`) and expert caching are tunable, and neither
+  applies to dense models.
 
 ## Not yet exposed (dense model — likely irrelevant)
 

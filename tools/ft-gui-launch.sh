@@ -25,15 +25,20 @@ if [[ -n "$(server_pids)" ]]; then
 fi
 
 # --- option picker ---
-CHOICE=$($Z --forms --title="Start FreeToken — Huihui Qwen3.8 27B NVFP4" --text="Server options" \
+CHOICE=$($Z --width 640 --forms --title="Start FreeToken — Huihui Qwen3.8 27B NVFP4" --text="Server options" \
   --add-combo="NVFP4 backend" --combo-values="triton|flashinfer|marlin|auto" \
   --add-combo="Attention backend" --combo-values="auto (fi)|fi|fa3|triton" \
   --add-entry="Port (default 8001)" \
   --add-combo="Context length" --combo-values="default (262k)|8192|16384|32768|65536|131072" \
   --add-combo="Max concurrent requests" --combo-values="4 (default)|1|2|8" \
+  --add-combo="Reasoning parser" --combo-values="qwen3 (default)|auto|off|deepseekv32|gpt_oss|glm|minimax|minimax_m3|muse_glimmer|gemma4" \
+  --add-entry="Temperature (blank = model default)" \
+  --add-combo="KV cache strategy" --combo-values="radix (default)|naive" \
+  --add-combo="Weight dtype" --combo-values="bfloat16 (default)|float16|float32|auto" \
+  --add-combo="MoE CPU layers (offload)" --combo-values="none (all GPU)|0.25|0.5|4|8|16" \
   --separator="|" ) || exit 0
 
-IFS='|' read -r NVFP4 ATTN PORT CTX CONC <<<"$CHOICE"
+IFS='|' read -r NVFP4 ATTN PORT CTX CONC REASON TEMP CACHETYPE DTYPE CPULAYERS <<<"$CHOICE"
 [[ -n "$PORT" ]] || PORT=8001
 [[ "$PORT" =~ ^[0-9]+$ ]] || PORT=8001
 
@@ -45,6 +50,26 @@ case "$CTX" in
   default*) : ;;
   *) CTX_ARG=(--max-seq-len-override "$CTX") ;;
 esac
+
+REASON_ARG=()
+[[ "$REASON" == *"default"* ]] || REASON_ARG=(--reasoning-parser "$REASON")
+
+TEMP_ARG=()
+if [[ -n "$TEMP" ]] && python3 -c "import sys; t=float(sys.argv[1]); sys.exit(0 if 0<=t<=2 else 1)" "$TEMP" 2>/dev/null; then
+  TEMP_ARG=(--sampling-defaults none)
+else
+  TEMP=""
+fi
+
+CACHE_ARG=()
+[[ "$CACHETYPE" == *"default"* ]] || CACHE_ARG=(--cache-type "${CACHETYPE%% *}")
+
+DTYPE_ARG=()
+[[ "$DTYPE" == *"("* ]] && DTYPE="${DTYPE%% *}"
+[[ "$DTYPE" == "bfloat16" || "$DTYPE" == "auto" ]] || DTYPE_ARG=(--dtype "$DTYPE")
+
+CPU_ARG=()
+[[ "$CPULAYERS" == "none"* ]] || CPU_ARG=(--moe-cpu-layers "$CPULAYERS")
 
 LOG_FILE="$PROJECT_DIR/models-download/ftserve_${PORT}.log"
 
@@ -63,6 +88,7 @@ nohup "$VENV/bin/ft" serve --model-path "$MODEL_DIR" \
   --host 0.0.0.0 --port "$PORT" \
   --nvfp4-backend "$NVFP4" "${ATTN_ARG[@]}" "${CTX_ARG[@]}" \
   --max-running-requests "${CONC%% *}" \
+  "${REASON_ARG[@]}" "${CACHE_ARG[@]}" "${DTYPE_ARG[@]}" "${CPU_ARG[@]}" \
   >>"$LOG_FILE" 2>&1 &
 SRV_PID=$!
 
@@ -73,7 +99,7 @@ for _ in {1..240}; do
   fi
   if python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:$PORT/health', timeout=2)" >/dev/null 2>&1; then
     $Z --info --title="FreeToken Huihui" \
-      --text="Server ready.\n\nLocal:   http://127.0.0.1:$PORT/v1\nLAN:     http://$(hostname -I | awk '{print $1}'):$PORT/v1\nBackend: $NVFP4" || true
+      --text="Server ready.\n\nLocal:   http://127.0.0.1:$PORT/v1\nLAN:     http://$(hostname -I | awk '{print $1}'):$PORT/v1\nBackend: $NVFP4${TEMP:+\nTemp override: $TEMP (per-request via API body)}" || true
     exit 0
   fi
   sleep 1
