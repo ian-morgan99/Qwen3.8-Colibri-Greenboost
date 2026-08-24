@@ -71,6 +71,76 @@ no T3 (NVMe) tier. For MoE models:
       expect heavy CPU compute of misses. Evaluate mgoin pruned75 (~436 GB)
       vs smaller quants; no T3 tier exists to spill to NVMe.
 
+## 2.4T feasibility analysis (written before download completes)
+
+Hardware: RTX 5090 32 GB (T1) + 91 GB RAM (~61 GB usable, T2) + 3.7 TB NVMe.
+Target: unsloth UD-Q1_0 GGUF, **397 GB total** across 10 shards.
+
+**Verdict: it will NOT fit in T1+T2 — shortfall is ~305 GB.** FreeToken has
+no T3/NVMe tier, so a full-resident load is impossible on this box as-is.
+
+Why it might still work partially:
+- Only ~95B params are active per token (A95B). At Q1_0's ~1 bit/param that's
+  ~12 GB of expert weights touched per token — but WHICH experts rotate with
+  the token, and across a 64-layer model the union touched over a sequence
+  approaches the full 397 GB without caching.
+- Hybrid offload (`--moe-backend hybrid`) streams misses over PCIe while
+  computing others on CPU; but misses would have to come from disk once RAM
+  overflows — which FreeToken cannot do.
+
+Paths that could make it work, ranked:
+
+1. **Smaller quant (best).** A ~90 GB quant (e.g. ~Q1_s or a pruned variant)
+   fits T1+T2 fully resident-ish with expert cache. Watch for unsloth UD-Q2_K_XL
+   or RedHatAI NVFP4 *pruned* releases. Pruned75 at 436 GB still too big;
+   need ≤~85 GB to leave room for KV + OS.
+2. **Convert GGUF → FTW with --moe-backend offload** (`ft checkpoint`): banks
+   experts for streaming, but still requires T2 residency of the banks — same
+   397 GB problem.
+3. **LM Studio fallback:** llama.cpp CAN mmap from NVMe (pseudo-T3), giving
+   maybe 1–3 tok/s — usable proof-of-life only.
+4. **Not viable:** any FreeToken native run of the full 397 GB file.
+
+Recommendation: let the current download finish (it doubles as LM Studio
+mmap test material), but plan the real FreeToken target as a ≤90 GB quant or
+pruned NVFP4 release. Revisit when RedHatAI/mgoin publish smaller variants.
+
+## Research findings (2025–2026 survey, incl. local-LLM second opinion)
+
+Second opinion from local Qwen3.8-8B confirmed the core math and added
+corrections:
+
+- **12 GB/token is a lower bound** — add attention/shared/router/embedding/KV
+  overhead → plan for **13–18 GB/token** depending on context.
+- Union-of-experts argument holds for **batched/prefill** workloads (batch of
+  B tokens can touch up to min(E, B·k) experts per layer), not single-token
+  decode.
+- PCIe 5.0 x16 (~50 GB/s) caps pure weight-streaming decode at ~4 tok/s with
+  0% cache hit; DRAM-compute path caps at ~5–10 tok/s.
+- Single NVMe cold random serving: **0.1–1 tok/s**; warm page-cache hot set:
+  0.5–3 tok/s. RAID0 helps little beyond ~3 tok/s (Linux buffered I/O is the
+  limiter, per KTransformers community data).
+- Real-world datapoint: DeepSeek-671B Q4 via KTransformers gets 3–6 tok/s
+  with all experts in RAM, 1.5–3 tok/s paging from Gen5 NVMe. KTransformers
+  ≈2× faster than llama.cpp in MoE-offload scenarios.
+
+Techniques worth tracking / adopting where possible:
+
+| Technique | Relevance to us |
+|---|---|
+| Fiddler-style CPU compute of misses (send activations to CPU, not weights to GPU) | FreeToken hybrid already does this — validate it's activation-shipping, not weight-copying |
+| Routing-aware caching (frequency/entropy-based, not plain LRU) | Not exposed by ft flags; engine-internal |
+| KV quantization FP8/FP4 + attention-weighted eviction | ft has no kv-cache-dtype flag; revisit on engine updates |
+| Prefix caching | Available: `--cache-type radix` — already in GUI |
+| Speculative decoding (EAGLE/MTP) | Check `ft serve --help` for draft-model support when 2.4T arrives |
+| Expert pruning/merging/distillation | The only realistic route to ≤90 GB full-resident |
+| Mixed-precision residency (hot experts high-bit, cold low-bit) | Unsloth Dynamic quants already do this statically |
+
+Revised strategy ranking for 2.4T:
+1. Smaller/pruned/merged quant that fits T1+T2 fully (only true fix).
+2. llama.cpp/KTransformers mmap pseudo-T3 as proof-of-life (expect 0.5–3 tok/s).
+3. FTW conversion only helps if we later get an mmap/disk tier in FreeToken.
+
 ## Not yet exposed (dense model — likely irrelevant)
 
 MoE flags (`--moe-cache-*`, `--expert-load`, `--moe-cpu-layers`) apply to MoE
