@@ -5,7 +5,7 @@ files = ["model.safetensors", "model.safetensors.index.json", "config.json",
          "generation_config.json", "chat_template.jinja", "tokenizer.json",
          "tokenizer_config.json", "merges.txt", "vocab.json"]
 CHUNK = 1<<20
-RATE = 1*1024*1024  # 1 MB/s: shares WAN with the GGUF downloader (3 MB/s)
+RATE = 0  # unthrottled: GGUF downloader keeps its own 3 MB/s cap
 
 os.makedirs(dest_dir, exist_ok=True)
 tree = json.load(urllib.request.urlopen(
@@ -35,8 +35,9 @@ for f in files:
                         chunk = r.read(CHUNK)
                         if not chunk: break
                         out.write(chunk); out.flush(); sent += len(chunk)
-                        target = sent/RATE; elapsed = time.time()-t0
-                        if elapsed < target: time.sleep(target-elapsed)
+                        if RATE:
+                            target = sent/RATE; elapsed = time.time()-t0
+                            if elapsed < target: time.sleep(target-elapsed)
             if expected and os.path.getsize(part) != expected:
                 print("incomplete", f, os.path.getsize(part), "of", expected, "- retrying", flush=True)
                 time.sleep(15); continue
