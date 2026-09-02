@@ -1,8 +1,21 @@
 # Detailed Backend Plan: vLLM-Moet Execution Foundation with Colibrì, GreenBoost, and TurboQuant/SpectralQuant
 
+> **CANONICAL IMPLEMENTATION PLAN**
+>
+> - **Status:** Phase 0 / Phase 0.5 — checkpoint inventory and routing-trace provenance are in place, but **do not start Phase 1** until the following gates are PASS (see `artifacts/qwen38-phase-status.json` for machine-readable state):
+>   - checkpoint-derived Phase 0 inventory (`PASS` — see `artifacts/qwen38_phase0_inventory_report.md`)
+>   - routing trace provenance with `config_sha256` gate (`PASS` for synthetic; `BLOCKED` for captured — see `artifacts/qwen38_routing_trace_metrics.json`)
+>   - dense execution format chosen (`PASS` — INT4/NF4 mandatory per `docs/QWEN38_WORKSTATION_FEASIBILITY.md` "Viable Paths Forward → Path 1: Lower-Bit Dense Quantization"; the 88.03 GiB FP16/BF16 dense footprint cannot fit on a 32GB VRAM GPU)
+>   - SM120 expert-kernel compatibility (`BLOCKED` — `artifacts/kernel-compatibility.json` still says `requires_verification`)
+> - **Source of truth for numbers:** `tools/qwen38_config.py` (frozen 38-attribute dataclass) and the artifacts it regenerates (`artifacts/qwen38-layout.json`, `artifacts/qwen38_phase0_inventory_report.md`, `artifacts/qwen38_routing_trace_metrics.json`). Do not hard-code model dimensions, expert counts, dense footprint, or per-expert byte sizes anywhere else — link the SoT artifact instead.
+> - **Supersedes:** the older `backend_colibri_vllm_moe_plan_revised.md` (already deleted; this document is the only active implementation plan).
+> - **Companion docs:** `docs/architecture/QWEN38_CHECKPOINT_DERIVED.md` (architecture), `docs/QWEN38_WORKSTATION_FEASIBILITY.md` (feasibility numbers), `docs/WORKLOAD_AWARE_EXPERT_TIERING_ATLAS_DESIGN.md` (tiering design), `docs/T3_DISK_TIER_PLAN.md` (L3 disk tier).
+
 ## 1. Executive Summary
 
-This document provides a detailed, fleshed-out plan for implementing the backend inference runtime for the Qwen3.8-2.4T-A95B model (~95B active parameters, 512 experts) on a workstation-class system (RTX 5090 32GB VRAM, 96GB DDR5 RAM, NVMe storage). 
+This document provides a detailed, fleshed-out plan for implementing the backend inference runtime for the Qwen3.8-2.4T-A95B model (~95B active parameters, 512 experts) on a workstation-class system (RTX 5090 32GB VRAM, 96GB DDR5 RAM, NVMe storage).
+
+> **Provenance** (read `docs/architecture/QWEN38_CHECKPOINT_DERIVED.md` for full derivation): `~95B active parameters` and `512 experts` are **checkpoint-derived** from `checkpoints/Qwen3.8-2.4T-A95B/config.json` (config_sha256 `89391ac8f44227959cb4b89df5c94d0b78d5686bc102988ca2ca4447fc4b84f1`); see `tools/qwen38_config.py` for the authoritative 38-attribute frozen dataclass.
 
 The architecture is built on a clear engine boundary:
 - **Execution Foundation**: vLLM-Moet (proven expert-cache architecture, SM120 kernels)
@@ -93,10 +106,13 @@ router + cache state → different expert IDs
 9. Generate 48/64/72GB RAM-arena simulations to model L2 constraints.
 10. Run routing traces on representative coding prompts if the model can be executed anywhere.
 11. Estimate **stalling cache miss rate** and **milliseconds of exposed expert-transfer latency per generated token**, not just average expert hit rate or synthetic zero-miss metrics (critical: a cache with high expert hits can still perform badly if the misses that occur are not hidden by N+1/N+2 asynchronous prefetch).
+    > **Provenance**: Phase 0 traces are **synthetic** (placeholder routing patterns) on top of **checkpoint-derived** architecture. They are sufficient to drive simulator calibration but are NOT a substitute for a captured-on-real-requests trace; see `artifacts/qwen38-phase-status.json` "routing_trace_provenance_phase0_5" gate.
 12. **Output Qwen3.8→vLLM-Moet compatibility gate matrix**: `tensor → shape → dtype → expert role → existing kernel compatible? → conversion required?`
     - This is a **go/no-go gate**. If Qwen's K/N dimensions do not match one of the existing SM120 cubins, the project needs a kernel extension before cache work matters.
 
 **Critical Go/No-Go Finding**: The mandatory non-expert VRAM footprint is **~88.03 GiB in FP16/BF16**, which exceeds the 32GB VRAM of the RTX 5090 workstation. This means the dense/shared portion alone cannot fit alongside KV, CUDA workspace, and an expert L1 cache on a 32GB GPU. The architecture **requires dense-layer offload or lower-bit dense kernels** before expert tiering can proceed.
+
+> **Provenance**: `~88.03 GiB` is **computed_from_checkpoint** (arithmetic on `checkpoint_derived` fields: 92 layers × dense params per layer in FP16/BF16). It is the minimum VRAM required to hold the non-expert portion of the model, independent of expert tiering. See `docs/QWEN38_WORKSTATION_FEASIBILITY.md` "Critical Go/No-Go Finding" and `tools/qwen38_config.py` for the per-layer breakdown.
 
 **Deliverable**: Phase 0 report with six mandatory answers before touching runtime code:
 - exact mandatory non-expert VRAM footprint;
@@ -238,22 +254,32 @@ router + cache state → different expert IDs
 
 ## 5. Critical Telemetry Requirements (Mandatory)
 
-The following metrics must be implemented and monitored throughout all phases:
+The following metrics must be implemented and monitored throughout all phases. The **primary** metrics (#1–#4) are the ones that actually determine decode tok/s, TTFT, and whether Phase 1+ is meeting its SLO; the **secondary** metrics (#5–#14) are still required for capacity planning and diagnosis but should be read in light of the primary ones.
 
-1. **L1 hit rate** (VRAM hot set)
-2. **L2 hit rate** (RAM arena)
-3. **L3 fetch rate** (NVMe pack store)
-4. **stalling cache miss rate** (critical: drives decode performance more strongly than headline token→expert hit percentage; measures milliseconds of exposed expert-transfer latency per generated token)
-5. **replay percentage**
-6. **unique expert misses/step**
-7. **bytes NVMe→RAM/token**
-8. **bytes RAM→GPU/token**
-9. **useful-prefetch ratio**
-10. **wasted-prefetch bytes**
-11. **cache churn**
-12. **expert-set Jaccard similarity between adjacent tokens/layers**
-13. **p50/p95 expert-fetch latency**
-14. **GPU idle time waiting for experts**
+**Primary — exposed-wait / direct user-impact metrics**
+
+1. **stalling cache miss rate** (critical: drives decode performance more strongly than headline token→expert hit percentage; measures milliseconds of exposed expert-transfer latency per generated token)
+2. **GPU idle time waiting for experts** (the actual wall-clock cost the user pays for a miss)
+3. **p50/p95 expert-fetch latency** (end-to-end NVMe→RAM→GPU; what the GPU is waiting on)
+4. **replay percentage** (how often the cache must re-fetch a previously-resident expert; indicates churn that can mask as a hit)
+
+**Primary — pressure / efficiency metrics**
+
+5. **bytes NVMe→RAM/token** (NVMe pressure; primary L3 capacity signal)
+6. **bytes RAM→GPU/token** (GPU pressure; primary L1 capacity signal)
+7. **useful-prefetch ratio** and **wasted-prefetch bytes** (prefetch quality; pairs 1:1)
+8. **decode tok/s and TTFT** (the only metrics the end user actually feels)
+
+**Secondary — locality and counter-metrics (still required, but not the primary SLO)**
+
+9. **L1 hit rate** (VRAM hot set) — derived from #1 + #5
+10. **L2 hit rate** (RAM arena) — derived from #1 + #5
+11. **L3 fetch rate** (NVMe pack store) — derived from #5
+12. **unique expert misses/step** (compositional, used for prefetch batching)
+13. **cache churn** (L1 evictions per second)
+14. **expert-set Jaccard similarity between adjacent tokens/layers** (router stability, used by Phase 5 lookahead)
+
+> **Anti-pattern warning:** do not optimise for a high L1/L2 hit rate while exposed-wait (#1, #2) regresses. The "zero-miss-replay" headline metric from the vLLM-Moet paper is *exactly* the sort of derivative counter that hides decode stalls — prefer the exposed-wait metrics above when reasoning about user-visible performance.
 
 ---
 

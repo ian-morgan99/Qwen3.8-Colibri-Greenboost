@@ -1,0 +1,43 @@
+{
+  "schema_version": "qwen38.phase_status.v1",
+  "generated_by": "issue-3 docs-consolidation (manual hand-maintained)",
+  "summary": "All Phase 1+ runtime work is BLOCKED. Phase 0 and Phase 0.5 (provenance) are PASS, but the SM120 expert-kernel compatibility gate has not been verified and the captured routing trace gate is still BLOCKED. Do not start Phase 1 implementation until all four gates reach PASS.",
+  "phase1_allowed": false,
+  "source_of_truth": {
+    "module": "tools/qwen38_config.py",
+    "config_sha256": "89391ac8f44227959cb4b89df5c94d0b78d5686bc102988ca2ca4447fc4b84f1",
+    "config_path": "checkpoints/Qwen3.8-2.4T-A95B/config.json"
+  },
+  "gates": {
+    "checkpoint_inventory_phase0": {
+      "status": "PASS",
+      "evidence_artifact": "artifacts/qwen38_phase0_inventory_report.md",
+      "notes": "Architecture fields (num_hidden_layers=92, num_experts=512, num_experts_per_tok=10, hidden_size=8192, moe_intermediate_size=2048) are checkpoint-derived from config_sha256 above.",
+      "blocking_finding": null
+    },
+    "routing_trace_provenance_phase0_5": {
+      "status": "PASS_SYNTHETIC",
+      "evidence_artifact": "artifacts/qwen38_routing_trace_metrics.json",
+      "notes": "Synthetic trace with checkpoint-derived architecture (data_classification: synthetic_with_checkpoint_derived_arch). Gates the simulator; does NOT gate Phase 1 because a captured trace is still needed for realistic stalling-miss measurements.",
+      "blocking_finding": "Captured-on-real-requests trace is still missing. Until then, any Phase 1 capacity plan is an estimate, not a measurement."
+    },
+    "dense_execution_format_chosen": {
+      "status": "PASS",
+      "evidence_artifact": "docs/QWEN38_WORKSTATION_FEASIBILITY.md",
+      "notes": "INT4/NF4 mandatory. The 88.03 GiB FP16/BF16 dense footprint cannot fit on 32GB VRAM.",
+      "blocking_finding": null
+    },
+    "sm120_expert_kernel_compatibility": {
+      "status": "BLOCKED",
+      "evidence_artifact": "artifacts/kernel-compatibility.json",
+      "notes": "vllm_moet_sm120_kernels.status is still requires_verification. W1/W2/W3 tensor shapes, activation function, quant metadata and MoE layout must be verified against existing SM120 cubins before Phase 1 can start.",
+      "blocking_finding": "Do not start Phase 1 expert-kernel integration until this gate moves to PASS. See artifacts/kernel-compatibility.json go_no_go_gate_requirements for the checklist."
+    }
+  },
+  "phase_progression": [
+    {"phase": "Phase 0", "name": "Exact Physical Inventory", "status": "COMPLETE", "blocks_phase_1": true},
+    {"phase": "Phase 0.5", "name": "Routing Trace Provenance", "status": "PARTIAL_SYNTHETIC_ONLY", "blocks_phase_1": true},
+    {"phase": "Phase 1", "name": "vLLM-Moet Expert-Provider/Cache Reuse", "status": "BLOCKED", "blocks_phase_1": false},
+    {"phase": "Phase 2-9", "name": "Subsequent implementation phases", "status": "NOT_STARTED", "blocks_phase_1": false}
+  ]
+}
