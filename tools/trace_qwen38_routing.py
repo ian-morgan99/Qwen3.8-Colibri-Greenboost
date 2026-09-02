@@ -306,7 +306,13 @@ def load_captured_traces(
             f"Unsupported trace schema {schema!r}; expected 'qwen38.routing_trace.v1'."
         )
     declared_config_sha = doc.get("config_sha256")
-    if declared_config_sha and declared_config_sha != config.config_sha256:
+    if not declared_config_sha:
+        raise ValueError(
+            "Captured trace is missing required field 'config_sha256'. "
+            "A captured trace MUST record the config_sha256 of the checkpoint "
+            "it was produced from, otherwise we cannot tell whether it is stale."
+        )
+    if declared_config_sha != config.config_sha256:
         raise ValueError(
             f"Captured trace was produced with config_sha256={declared_config_sha} "
             f"but the active checkpoint is {config.config_sha256}. "

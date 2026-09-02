@@ -115,26 +115,63 @@ def build_layout(config: dict[str, Any], tensors: dict[str, dict[str, Any]], sou
 
 
 def build_memory_plan(layout: dict[str, Any], vram_gb: float, ram_gb: float, nvme_read_gbps: float) -> dict[str, Any]:
-    dense = layout["bytes"]["dense_shared"] + layout["bytes"]["shared_expert"]
-    routed = layout["bytes"]["routed_expert"]
-    expert_count = len(layout["expert_ids_observed"])
-    expert_size = routed / expert_count if expert_count else None
-    vram_bytes = int(vram_gb * 1024**3)
-    ram_bytes = int(ram_gb * 1024**3)
-    remaining_vram = max(0, vram_bytes - dense)
-    active = expert_size * (layout["experts_activated_per_token"] or 0) if expert_size is not None else None
-    return {
-        "assumptions": {"vram_gib": vram_gb, "ram_gib": ram_gb, "nvme_read_gib_per_second": nvme_read_gbps, "dense_weights_are_resident": True},
-        "bytes": {"dense_shared_resident": dense, "routed_experts": routed, "total_tensor_storage": dense + routed, "expert_size_average": expert_size, "active_expert_bytes_per_token_estimate": active},
-        "capacity": {"gpu_expert_cache_bytes_after_dense": remaining_vram, "gpu_experts_fit_after_dense": int(remaining_vram // expert_size) if expert_size else None, "ram_experts_fit": int(ram_bytes // expert_size) if expert_size else None},
-        "traffic": {"cold_nvme_seconds_per_active_token_estimate": active / (nvme_read_gbps * 1024**3) if active and nvme_read_gbps else None, "note": "Traffic assumes every active expert is cold and ignores overlap, compression, and filesystem cache."},
-    }
+    """Build the v2 memory plan from the SoT and the routing-trace artifact.
+
+    The previous v1 schema (assumptions/bytes/capacity/traffic) is now produced
+    by ``simulate_expert_cache.build_memory_plan`` and stamped with
+    ``schema_version = qwen38.memory_plan.v2``. We delegate to that builder so
+    that ``inventory_checkpoint.py`` and ``simulate_expert_cache.py`` cannot
+    drift apart — the per-expert byte size, GGUF quantisation capacity and
+    config_sha256 all come from ``tools.qwen38_config`` rather than from the
+    in-memory tensor scan, which is more robust against partial inventory
+    (see GitHub Issue #2 AC1, AC2, AC6).
+
+    The v1 ``traffic`` block is intentionally dropped: cold-NVMe estimates are
+    superseded by the stalling-miss-rate measured in
+    ``artifacts/qwen38_routing_trace_metrics.json``, which is the
+    authoritative behaviour metric.
+    """
+    from simulate_expert_cache import build_memory_plan as _v2_builder
+
+    # ``vram_gb`` / ``ram_gb`` arguments are accepted but only the cache-size
+    # tables carry through to the v2 schema. The caller selects the sweep.
+    return _v2_builder(
+        gpu_cache_sizes_gb=[8, 12, 16, 20, 24],
+        ram_arena_sizes_gb=[48, 64, 72, 96, 128],
+        routing_trace_metrics_path="artifacts/qwen38_routing_trace_metrics.json",
+    )
 
 
 def report(layout: dict[str, Any], plan: dict[str, Any]) -> str:
     gib = 1024**3
     def fmt(value: Any) -> str:
         return "unknown" if value is None else f"{value / gib:.2f} GiB"
+    bytes_per_expert = plan.get("bytes_per_expert_per_quant", {})
+    quant_table = "\n".join(
+        f"| `{name}` | {size:,} |"
+        for name, size in sorted(bytes_per_expert.items())
+    ) or "| _(none)_ |  |"
+
+    def gpu_row(sim: dict[str, Any]) -> str:
+        return (
+            f"| {sim['cache_gb']} GiB | {sim['experts_fit_bf16']} | "
+            f"{sim['experts_fit_per_quant'].get('q1_0', '?')} | "
+            f"{sim['experts_fit_per_quant'].get('q4_k_m', '?')} | "
+            f"{sim['experts_fit_per_quant'].get('q8_0', '?')} |"
+        )
+
+    def ram_row(sim: dict[str, Any]) -> str:
+        return (
+            f"| {sim['arena_gb']} GiB | {sim['experts_fit_bf16']} | "
+            f"{sim['experts_fit_per_quant'].get('q1_0', '?')} | "
+            f"{sim['experts_fit_per_quant'].get('q4_k_m', '?')} | "
+            f"{sim['experts_fit_per_quant'].get('q8_0', '?')} |"
+        )
+
+    gpu_rows = "\n".join(gpu_row(s) for s in plan.get("gpu_cache_simulations", []))
+    ram_rows = "\n".join(ram_row(s) for s in plan.get("ram_arena_simulations", []))
+    hit = plan.get("hit_rates_from_routing_trace", {})
+    prov = plan.get("provenance", {})
     return f"""# Qwen3.8 workstation feasibility
 
 Generated from: `{layout['source']}`
@@ -152,19 +189,43 @@ Generated from: `{layout['source']}`
 | Routed expert tensors | {fmt(layout['bytes']['routed_expert'])} |
 | Total tensor storage | {fmt(sum(layout['bytes'].values()))} |
 
-## Initial placement model
+## Per-expert footprint (GGUF quantisations)
 
-With the default 32 GiB VRAM and 70 GiB RAM planning assumptions:
+| Quant | Bytes per expert |
+|---|---:|
+{quant_table}
 
-- Dense/shared resident footprint: **{fmt(plan['bytes']['dense_shared_resident'])}**
-- Average routed expert size: **{fmt(plan['bytes']['expert_size_average'])}**
-- GPU expert capacity after dense weights: **{fmt(plan['capacity']['gpu_expert_cache_bytes_after_dense'])}**
-- Estimated GPU experts fitting: **{plan['capacity']['gpu_experts_fit_after_dense'] or 'unknown'}**
-- Estimated RAM experts fitting: **{plan['capacity']['ram_experts_fit'] or 'unknown'}**
-- Cold active-expert NVMe traffic per token: **{plan['traffic']['cold_nvme_seconds_per_active_token_estimate'] if plan['traffic']['cold_nvme_seconds_per_active_token_estimate'] is not None else 'unknown'} seconds at the configured sequential read rate**
+## GPU expert cache sweep (after dense/shared resident footprint)
 
-These are planning estimates. The report deliberately leaves MoE-layer count and
-runtime hit rates unknown when the checkpoint does not expose enough metadata.
+| Cache size | BF16 experts | Q1_0 experts | Q4_K_M experts | Q8_0 experts |
+|---|---:|---:|---:|---:|
+{gpu_rows or '| _(none)_ |  |  |  |  |'}
+
+## RAM expert arena sweep
+
+| Arena size | BF16 experts | Q1_0 experts | Q4_K_M experts | Q8_0 experts |
+|---|---:|---:|---:|---:|
+{ram_rows or '| _(none)_ |  |  |  |  |'}
+
+## Hit/miss behaviour (from `qwen38_routing_trace_metrics.json`)
+
+- L1 hit rate: **{hit.get('l1_hit_rate_pct', 'unknown')}%**
+- L2 hit rate: **{hit.get('l2_hit_rate_pct', 'unknown')}%**
+- Stalling miss rate: **{hit.get('stalling_miss_rate_pct', 'unknown')}%**
+
+## Provenance
+
+- config_sha256: `{prov.get('config_sha256', 'unknown')}`
+- routing trace artifact: `{prov.get('routing_trace_metrics_path', 'unknown')}`
+- simulator_commit: `{prov.get('simulator_commit', 'unknown')}`
+- data classification: `{prov.get('data_classification', 'unknown')}`
+
+These numbers are derived from the checkpoint architecture (not the tensor
+scan) and from the synthetic LFRU trace in
+`artifacts/qwen38_routing_trace_metrics.json`. Cold-NVMe traffic estimates
+from the v1 schema are intentionally omitted; the stalling-miss rate above
+is the authoritative behaviour metric. See
+`docs/architecture/QWEN38_CHECKPOINT_DERIVED.md` for derivation details.
 
 ## Limitations and gate
 

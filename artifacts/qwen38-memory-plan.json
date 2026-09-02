@@ -1,63 +1,206 @@
 {
+  "schema_version": "qwen38.memory_plan.v2",
+  "provenance": {
+    "config_path": "/home/ian/Documents/VSCodeProjects/Qwen3.8/checkpoints/Qwen3.8-2.4T-A95B/config.json",
+    "config_sha256": "89391ac8f44227959cb4b89df5c94d0b78d5686bc102988ca2ca4447fc4b84f1",
+    "model_type": "qwen3_5_moe_text",
+    "architectures": [
+      "Qwen3_5MoeForCausalLM"
+    ],
+    "num_hidden_layers": 92,
+    "num_experts": 512,
+    "num_experts_per_tok": 10,
+    "hidden_size": 8192,
+    "moe_intermediate_size": 2048,
+    "weights_per_expert": 50331648,
+    "bytes_per_expert_bf16": 100663296,
+    "bytes_per_layer_experts_bf16": 51539607552,
+    "gguf_avg_bits_per_weight": {
+      "Q1_0": 1.75,
+      "Q2_K": 3.35,
+      "Q3_K_M": 4.1,
+      "Q4_K_M": 4.85,
+      "Q5_K_M": 5.69,
+      "Q6_K": 6.56,
+      "Q8_0": 8.5
+    },
+    "bytes_per_expert_per_quant": {
+      "BF16": 100663296,
+      "Q1_0": 11010048,
+      "Q2_K": 21076378,
+      "Q3_K_M": 25794970,
+      "Q4_K_M": 30513562,
+      "Q5_K_M": 35798385,
+      "Q6_K": 41271951,
+      "Q8_0": 53477376
+    },
+    "routing_trace_artifact": "artifacts/qwen38_routing_trace_metrics.json",
+    "routing_trace_meta": {
+      "config_sha256": "89391ac8f44227959cb4b89df5c94d0b78d5686bc102988ca2ca4447fc4b84f1",
+      "trace_source": "synthetic",
+      "data_classification": "synthetic_with_checkpoint_derived_arch",
+      "policy": "lfru",
+      "simulator_tool": "tools/trace_qwen38_routing.py"
+    },
+    "regenerator": "tools/simulate_expert_cache.py"
+  },
   "configuration": {
-    "num_layers": 92,
-    "num_experts_total": 512,
-    "num_active_experts_per_tok": 10,
-    "bytes_per_routed_expert_q1_0": 1536000000,
-    "active_expert_bytes_per_layer": 15360000000
+    "num_hidden_layers": 92,
+    "num_experts": 512,
+    "num_experts_per_tok": 10,
+    "bytes_per_expert_bf16": 100663296,
+    "bytes_per_layer_experts_bf16": 51539607552
   },
   "gpu_cache_simulations": {
     "8GB": {
-      "experts_fit": 5,
-      "estimated_hit_rate": 0.013,
-      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
+      "cache_size_gb": 8,
+      "experts_fit_per_quant": {
+        "BF16": 85,
+        "Q1_0": 780,
+        "Q2_K": 407,
+        "Q3_K_M": 333,
+        "Q4_K_M": 281,
+        "Q5_K_M": 239,
+        "Q6_K": 208,
+        "Q8_0": 160
+      },
+      "experts_fit_bf16": 85
     },
     "12GB": {
-      "experts_fit": 8,
-      "estimated_hit_rate": 0.0208,
-      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
+      "cache_size_gb": 12,
+      "experts_fit_per_quant": {
+        "BF16": 128,
+        "Q1_0": 1170,
+        "Q2_K": 611,
+        "Q3_K_M": 499,
+        "Q4_K_M": 422,
+        "Q5_K_M": 359,
+        "Q6_K": 312,
+        "Q8_0": 240
+      },
+      "experts_fit_bf16": 128
     },
     "16GB": {
-      "experts_fit": 11,
-      "estimated_hit_rate": 0.0286,
-      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
+      "cache_size_gb": 16,
+      "experts_fit_per_quant": {
+        "BF16": 170,
+        "Q1_0": 1560,
+        "Q2_K": 815,
+        "Q3_K_M": 666,
+        "Q4_K_M": 563,
+        "Q5_K_M": 479,
+        "Q6_K": 416,
+        "Q8_0": 321
+      },
+      "experts_fit_bf16": 170
     },
     "20GB": {
-      "experts_fit": 13,
-      "estimated_hit_rate": 0.0339,
-      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
+      "cache_size_gb": 20,
+      "experts_fit_per_quant": {
+        "BF16": 213,
+        "Q1_0": 1950,
+        "Q2_K": 1018,
+        "Q3_K_M": 832,
+        "Q4_K_M": 703,
+        "Q5_K_M": 599,
+        "Q6_K": 520,
+        "Q8_0": 401
+      },
+      "experts_fit_bf16": 213
     },
     "24GB": {
-      "experts_fit": 16,
-      "estimated_hit_rate": 0.0417,
-      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
+      "cache_size_gb": 24,
+      "experts_fit_per_quant": {
+        "BF16": 256,
+        "Q1_0": 2340,
+        "Q2_K": 1222,
+        "Q3_K_M": 999,
+        "Q4_K_M": 844,
+        "Q5_K_M": 719,
+        "Q6_K": 624,
+        "Q8_0": 481
+      },
+      "experts_fit_bf16": 256
     }
   },
   "ram_arena_simulations": {
     "48GB": {
-      "experts_fit": 33,
-      "estimated_hit_rate": 0.0027,
-      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
+      "cache_size_gb": 48,
+      "experts_fit_per_quant": {
+        "BF16": 512,
+        "Q1_0": 4681,
+        "Q2_K": 2445,
+        "Q3_K_M": 1998,
+        "Q4_K_M": 1689,
+        "Q5_K_M": 1439,
+        "Q6_K": 1248,
+        "Q8_0": 963
+      },
+      "experts_fit_bf16": 512
     },
     "64GB": {
-      "experts_fit": 44,
-      "estimated_hit_rate": 0.0036,
-      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
+      "cache_size_gb": 64,
+      "experts_fit_per_quant": {
+        "BF16": 682,
+        "Q1_0": 6241,
+        "Q2_K": 3260,
+        "Q3_K_M": 2664,
+        "Q4_K_M": 2252,
+        "Q5_K_M": 1919,
+        "Q6_K": 1665,
+        "Q8_0": 1285
+      },
+      "experts_fit_bf16": 682
     },
     "72GB": {
-      "experts_fit": 50,
-      "estimated_hit_rate": 0.0041,
-      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
+      "cache_size_gb": 72,
+      "experts_fit_per_quant": {
+        "BF16": 768,
+        "Q1_0": 7021,
+        "Q2_K": 3668,
+        "Q3_K_M": 2997,
+        "Q4_K_M": 2533,
+        "Q5_K_M": 2159,
+        "Q6_K": 1873,
+        "Q8_0": 1445
+      },
+      "experts_fit_bf16": 768
     },
     "96GB": {
-      "experts_fit": 67,
-      "estimated_hit_rate": 0.0055,
-      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
+      "cache_size_gb": 96,
+      "experts_fit_per_quant": {
+        "BF16": 1024,
+        "Q1_0": 9362,
+        "Q2_K": 4890,
+        "Q3_K_M": 3996,
+        "Q4_K_M": 3378,
+        "Q5_K_M": 2879,
+        "Q6_K": 2497,
+        "Q8_0": 1927
+      },
+      "experts_fit_bf16": 1024
     },
     "128GB": {
-      "experts_fit": 89,
-      "estimated_hit_rate": 0.0072,
-      "notes": "Synthetic simulation - replaced by real routing trace stalling miss rate metrics"
+      "cache_size_gb": 128,
+      "experts_fit_per_quant": {
+        "BF16": 1365,
+        "Q1_0": 12483,
+        "Q2_K": 6520,
+        "Q3_K_M": 5328,
+        "Q4_K_M": 4504,
+        "Q5_K_M": 3839,
+        "Q6_K": 3330,
+        "Q8_0": 2570
+      },
+      "experts_fit_bf16": 1365
     }
-  }
+  },
+  "hit_rates_from_routing_trace": {
+    "l1_vram_hit_rate": 0.0,
+    "l2_ram_hit_rate": 0.3677336956521739,
+    "nvme_fetch_rate": 0.632266304347826,
+    "stalling_miss_rate": 0.632266304347826,
+    "prefetch_hide_rate": 0.0
+  },
+  "notes": "Per-expert byte sizes are checkpoint-derived (weights_per_expert = 3 * hidden * moe_int). BF16 is exact; GGUF values are average-bits approximations for capacity planning. The actual GGUF file size is reported by tools/inventory_gguf.py. Cache hit / miss / stall rates are NOT estimated here \u2014 they come from artifacts/qwen38_routing_trace_metrics.json, which is the authoritative source for cache behaviour. The historical 1.5GB-per-expert Q1_0 constant in this file was a 150x error and has been removed; see GitHub Issue #2."
 }

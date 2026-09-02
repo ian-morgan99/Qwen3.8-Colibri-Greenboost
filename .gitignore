@@ -1,2 +1,7 @@
 __pycache__/
 *.pyc
+# Model-download tooling and large checked-out source trees that
+# are scratch space for evaluating the workstation feasibility plan,
+# not part of the tracked repo.
+models-download/
+llama.cpp-iq1narrow/

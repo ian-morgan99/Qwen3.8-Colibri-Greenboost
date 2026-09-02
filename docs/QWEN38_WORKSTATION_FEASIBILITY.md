@@ -80,6 +80,29 @@ poisoning when a real trace is eventually produced).
 - **N+1 prefetch hide rate**: 0.00%
 - **Stalling miss rate**: 63.23%
 
+### Per-Bucket Provenance
+
+Every number in the tables above can be traced back to a specific source.
+The bucketing mirrors the four `data_classification` families used in
+`tools/trace_qwen38_routing.py` and `tools/simulate_expert_cache.py`:
+
+| Bucket          | What it covers                                                           | Source                                                        |
+| --------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| `measured`      | numbers derived from actually loading the checkpoint or running the sim | `tools/qwen38_config.py` (config_sha256, 38-attribute model shape), `tools/trace_qwen38_routing.py` (latency distributions from raw expert-request stream), `tools/simulate_expert_cache.py` (per-token hit/miss accounting from the metrics file) |
+| `derived`       | numbers computed from `measured` inputs but not directly observed        | hit rates from raw hits/totals, expert-bytes-per-quant from `bytes_per_expert_bf16` × gguf bits/weight, working-set-cliff boundaries (96/128/192/256 GB), 184,000 expert-request count = 20×10×92×10 |
+| `hardware`      | numbers that come from the physical workstation profile                 | 32 GB VRAM (RTX 5090), 96 GB DDR5 RAM, NVMe tier (default `nvme-to-ram-bw-gbs` / `nvme-latency-us` in the simulator), 8 GB L1 budget and 96 GB L2 budget as the workstation default sweep point |
+| `simulation`    | numbers produced only by the synthetic routing generator                 | per-token expert routing sequence (popular-pool + locality-reuse window), LFRU-vs-LRU policy comparison, prefetch-hide-rate (currently 0% — a property of the synthetic locality model, not of real Qwen3.8 routing), L2-size sensitivity sweep |
+
+The `data_classification` field embedded in
+`artifacts/qwen38_routing_trace_metrics.json` reads
+`synthetic_with_checkpoint_derived_arch` — the `simulation` and `derived`
+buckets are honest about their origin, and the `measured` and `hardware`
+buckets are pinned to either a real file (`config.json` with a recorded
+sha256) or a documented physical profile. A captured-on-real-requests
+trace would be the only way to lift the `simulation` bucket into the
+`measured` bucket; that is the open gate tracked by
+`qwen38-phase-status.json::gates.routing_trace_provenance_phase0_5`.
+
 The 0% L1 rate is a function of layer size (~48 GiB of experts per layer in
 BF16) versus an 8 GB L1 budget — one layer's worth of experts simply does
 not fit. The 36.77% L2 rate reflects how many layers' worth of experts
