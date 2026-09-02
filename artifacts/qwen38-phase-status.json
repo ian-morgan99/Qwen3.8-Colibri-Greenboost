@@ -30,7 +30,7 @@
     "sm120_expert_kernel_compatibility": {
       "status": "BLOCKED",
       "evidence_artifact": "artifacts/kernel-compatibility.json",
-      "notes": "vllm_moet_sm120_kernels.status is still requires_verification. W1/W2/W3 tensor shapes, activation function, quant metadata and MoE layout must be verified against existing SM120 cubins before Phase 1 can start.",
+      "notes": "vllm_moet_sm120_kernels.status is still requires_verification. The kernel-compatibility artifact now uses a per-operator evidence schema (16 operators: full_attention_*, linear_attention_*, routed_expert_grouped_gemm, shared_expert_dense_gemm, router_topk, mtp_*, embedding, lm_head). Actual Qwen3.8 safetensors naming is 'mlp.experts.gate_up_proj' (fused) and 'mlp.experts.down_proj' (not w1/w2/w3). Each operator must move off BLOCKED with non-null evidence_log + upstream_commit before Phase 1 can start.",
       "blocking_finding": "Do not start Phase 1 expert-kernel integration until this gate moves to PASS. See artifacts/kernel-compatibility.json go_no_go_gate_requirements for the checklist."
     }
   },
