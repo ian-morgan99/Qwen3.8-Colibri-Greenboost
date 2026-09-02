@@ -1,0 +1,42 @@
+name: regression
+
+# Regression suite for Issues #2, #3, and #4. Runs the three
+# self-contained test scripts in `tools/` on every push and pull request
+# so we never accidentally break an already-closed-issue invariant
+# without the CI bot catching it.
+#
+# These tests use only the Python 3 standard library, so no
+# `pip install` step is needed. They each complete in well under a
+# minute on a single CPU, so a 10-minute timeout is more than enough.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    name: regression-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run test_no_duplicate_artifacts
+        run: python tools/test_no_duplicate_artifacts.py
+
+      - name: Run verify_issue2_routing_provenance
+        run: python tools/verify_issue2_routing_provenance.py
+
+      - name: Run verify_sm120_kernel_compat
+        run: python tools/verify_sm120_kernel_compat.py
