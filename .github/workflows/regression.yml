@@ -1,6 +1,6 @@
 name: regression
 
-# Regression suite for Issues #2, #3, #4, and #6. Runs the five
+# Regression suite for Issues #2, #3, #4, and #6. Runs the six
 # self-contained test scripts in `tools/` on every push and pull request
 # so we never accidentally break an already-closed-issue invariant
 # without the CI bot catching it.
@@ -46,12 +46,18 @@ jobs:
       - name: Run verify_sm120_kernel_compat
         run: python tools/verify_sm120_kernel_compat.py
 
-      # Issue #6 (Colibrì v1.6.2 loader hardening): typed error taxonomy
-      # and cross-field architecture validator. Both are pure-stdlib and
-      # run in milliseconds; the architecture validator additionally
-      # exercises a real Qwen3.8 config on disk.
+      # Issue #6 (Colibrì v1.6.2 loader hardening): typed error taxonomy,
+      # cross-field architecture validator, and byte-range safetensors
+      # validator. All three are pure-stdlib and run in milliseconds;
+      # the architecture validator additionally exercises a real
+      # Qwen3.8 config on disk. The malformed-checkpoint test crafts
+      # synthetic safetensors shards with deliberately broken headers
+      # and offsets to assert the *right* typed error fires.
       - name: Run test_loader_errors
         run: python tools/test_loader_errors.py
+
+      - name: Run test_malformed_checkpoints
+        run: python tools/test_malformed_checkpoints.py
 
       - name: Run validate_architecture against real Qwen3.8 config
         run: python tools/validate_architecture.py --config checkpoints/Qwen3.8-2.4T-A95B/config.json

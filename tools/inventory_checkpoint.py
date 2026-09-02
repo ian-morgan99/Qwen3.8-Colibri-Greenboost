@@ -11,22 +11,45 @@ import struct
 from pathlib import Path
 from typing import Any
 
+# Use the typed error taxonomy introduced for the Colibrì v1.6.2
+# hardening (Issue #6). Anything that fails a byte-range check here
+# raises ``TensorOutOfFileBounds`` so the caller can branch on a
+# well-known code rather than catching ValueError.
+import sys
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from loader_errors import (  # noqa: E402
+    InvalidTensorShape,
+    MalformedShardHeader,
+    TensorOutOfFileBounds,
+)
+
+
+# safetensors dtype codes and their byte widths. The on-disk spec uses
+# the short uppercase forms (``F32``, ``BF16``, ``I64`` …); some
+# internal tooling also emits the long lowercase form (``float32`` …).
+# Both forms are listed so the validator works against either.
 DTYPE_BYTES = {
-    "bool": 1,
-    "int8": 1,
-    "uint8": 1,
-    "float8_e4m3fn": 1,
-    "float8_e4m3fnuz": 1,
-    "float16": 2,
-    "bfloat16": 2,
-    "int16": 2,
-    "float32": 4,
-    "int32": 4,
-    "int64": 8,
-    "float64": 8,
+    "bool": 1, "BOOL": 1,
+    "int8": 1, "I8": 1,
+    "uint8": 1, "U8": 1,
+    "float8_e4m3fn": 1, "F8_E4M3": 1,
+    "float8_e4m3fnuz": 1, "F8_E4M3FNUZ": 1,
+    "float16": 2, "F16": 2,
+    "bfloat16": 2, "BF16": 2,
+    "int16": 2, "I16": 2,
+    "float32": 4, "F32": 4,
+    "int32": 4, "I32": 4,
+    "int64": 8, "I64": 8,
+    "float64": 8, "F64": 8,
 }
 EXPERT_RE = re.compile(r"(?:\.experts?\.|\.experts\[?)(\d+)")
+
+
+# Header size sanity cap: 100 MiB is far above any real safetensors header
+# we've seen, and a malformed header that declares itself to be 8 GiB
+# should fail fast rather than OOM the inventory run.
+MAX_HEADER_SIZE = 100 * 1024 * 1024
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -34,11 +57,148 @@ def read_json(path: Path) -> dict[str, Any]:
 
 
 def safetensors_header(path: Path) -> dict[str, Any]:
-    with path.open("rb") as handle:
-        header_size = struct.unpack("<Q", handle.read(8))[0]
-        if header_size > 100 * 1024 * 1024:
-            raise ValueError(f"safetensors header is unexpectedly large: {path}")
-        return json.loads(handle.read(header_size))
+    """Read a safetensors file's JSON header.
+
+    Raises :class:`MalformedShardHeader` if the file is too small to
+    even contain the 8-byte header-length prefix, or if the declared
+    header size is non-positive or above :data:`MAX_HEADER_SIZE`.
+    """
+    try:
+        with path.open("rb") as handle:
+            prefix = handle.read(8)
+            if len(prefix) != 8:
+                raise MalformedShardHeader(
+                    message=f"shard is shorter than 8-byte header prefix: {path}",
+                    details={"path": str(path), "got_bytes": len(prefix)},
+                )
+            (header_size,) = struct.unpack("<Q", prefix)
+            if header_size == 0 or header_size > MAX_HEADER_SIZE:
+                raise MalformedShardHeader(
+                    message=f"shard declares implausible header size: {path}",
+                    details={
+                        "path": str(path),
+                        "header_size": header_size,
+                        "max_allowed": MAX_HEADER_SIZE,
+                    },
+                )
+            blob = handle.read(header_size)
+            if len(blob) != header_size:
+                raise MalformedShardHeader(
+                    message="short read on safetensors header body",
+                    details={
+                        "path": str(path),
+                        "declared": header_size,
+                        "read": len(blob),
+                    },
+                )
+            return json.loads(blob)
+    except OSError as exc:
+        raise MalformedShardHeader(
+            message=f"could not read safetensors shard: {path}",
+            details={"path": str(path), "os_error": str(exc)},
+        ) from exc
+
+
+def validate_tensor_offsets(
+    shard: Path, tensor: dict[str, Any], tensor_name: str
+) -> dict[str, Any]:
+    """Return a copy of ``tensor`` augmented with range validation.
+
+    The safetensors header for each tensor declares
+    ``data_offsets = [start, end]`` (absolute byte offsets within the
+    file, *after* the 8-byte header-size prefix and the JSON header
+    body). If those offsets are inconsistent with the actual file size,
+    or if the byte count disagrees with the declared shape × dtype, the
+    function raises :class:`TensorOutOfFileBounds` or
+    :class:`InvalidTensorShape` respectively.
+
+    On success the returned dict is augmented with::
+
+        bytes_validated: True
+        source_offset:   start
+        source_end:      end
+        file_size:       <on-disk size at the time of the check>
+
+    These fields are stamped onto the layout so downstream tooling
+    can see that the check ran (rather than silently trusting the
+    header).
+    """
+    if "data_offsets" not in tensor:
+        # If the header didn't include data_offsets (some experimental
+        # formats), we cannot validate; surface that as a typed error
+        # rather than silently skipping.
+        raise TensorOutOfFileBounds(
+            message=f"tensor has no data_offsets: {tensor_name}",
+            details={"tensor": tensor_name, "shard": str(shard)},
+        )
+    start, end = tensor["data_offsets"]
+    if not (isinstance(start, int) and isinstance(end, int)):
+        raise TensorOutOfFileBounds(
+            message=f"data_offsets must be ints, got ({type(start).__name__}, "
+            f"{type(end).__name__})",
+            details={"tensor": tensor_name, "shard": str(shard)},
+        )
+    if start < 0 or end < start:
+        raise TensorOutOfFileBounds(
+            message="data_offsets must be non-negative and end >= start",
+            details={
+                "tensor": tensor_name,
+                "shard": str(shard),
+                "start": start,
+                "end": end,
+            },
+        )
+    declared = end - start
+    try:
+        file_size = shard.stat().st_size
+    except OSError as exc:
+        # A missing or unreadable shard is a *header*-level problem from
+        # the caller's perspective: the shard cannot be inspected at all.
+        # Surface it as a typed MalformedShardHeader so the caller can
+        # branch on a well-known code rather than catching OSError.
+        raise MalformedShardHeader(
+            message=f"could not stat safetensors shard: {shard}",
+            details={"path": str(shard), "os_error": str(exc)},
+        ) from exc
+    if end > file_size:
+        raise TensorOutOfFileBounds(
+            message="tensor data_offsets end is beyond end-of-file",
+            details={
+                "tensor": tensor_name,
+                "shard": str(shard),
+                "end_offset": end,
+                "file_size": file_size,
+            },
+        )
+    # Cross-check: shape × dtype must equal the declared byte count.
+    # A mismatch here means the header is lying about its own contents.
+    elements = math.prod(tensor.get("shape", []))
+    dtype = tensor.get("dtype", "")
+    if dtype not in DTYPE_BYTES:
+        raise InvalidTensorShape(
+            message=f"unknown dtype for shape/byte cross-check: {dtype!r}",
+            details={"tensor": tensor_name, "shard": str(shard), "dtype": dtype},
+        )
+    expected = elements * DTYPE_BYTES[dtype]
+    if expected != declared:
+        raise InvalidTensorShape(
+            message="declared byte count does not match shape × dtype",
+            details={
+                "tensor": tensor_name,
+                "shard": str(shard),
+                "expected_bytes": expected,
+                "declared_bytes": declared,
+                "shape": tensor.get("shape"),
+                "dtype": dtype,
+            },
+        )
+    return {
+        **tensor,
+        "bytes_validated": True,
+        "source_offset": start,
+        "source_end": end,
+        "file_size": file_size,
+    }
 
 
 def tensor_bytes(tensor: dict[str, Any]) -> int:
@@ -53,27 +213,51 @@ def tensor_bytes(tensor: dict[str, Any]) -> int:
 
 
 def collect_tensors(checkpoint: Path) -> tuple[dict[str, dict[str, Any]], str]:
+    """Walk the checkpoint's index and shard files.
+
+    Every tensor that has its ``data_offsets`` declared in the shard
+    header is also range-validated against the on-disk file
+    (:func:`validate_tensor_offsets`). The returned ``source`` string
+    describes where the metadata came from.
+    """
     index_path = checkpoint / "model.safetensors.index.json"
     if index_path.exists():
         index = read_json(index_path)
-        tensors = {}
+        tensors: dict[str, dict[str, Any]] = {}
         for name, shard in index["weight_map"].items():
             tensors[name] = {"shard": shard}
-        # Index files normally omit shape and dtype, so enrich from shard headers.
-        headers: dict[str, dict[str, Any]] = {}
+        # Index files normally omit shape and dtype, so enrich from shard
+        # headers and *also* range-validate the byte ranges while we're
+        # there. This is the cheap version of "open every shard" because
+        # the header read is a single small fseek; the actual data block
+        # is never touched.
         for shard in sorted(set(index["weight_map"].values())):
-            headers.update({name: value for name, value in safetensors_header(checkpoint / shard).items() if name != "__metadata__"})
-        for name, value in tensors.items():
-            value.update(headers.get(name, {}))
-        return tensors, "safetensors index and shard headers"
+            shard_path = checkpoint / shard
+            for name, header in safetensors_header(shard_path).items():
+                if name == "__metadata__":
+                    continue
+                if name not in tensors:
+                    continue  # referenced from a different shard
+                tensors[name].update(header)
+                if "data_offsets" in header:
+                    tensors[name] = validate_tensor_offsets(
+                        shard_path, tensors[name], name
+                    )
+        return tensors, "safetensors index and validated shard headers"
 
     files = sorted(checkpoint.glob("*.safetensors"))
     if not files:
         raise FileNotFoundError("expected model.safetensors.index.json or *.safetensors")
-    tensors = {}
     for shard in files:
-        tensors.update({name: {**value, "shard": shard.name} for name, value in safetensors_header(shard).items() if name != "__metadata__"})
-    return tensors, "safetensors shard headers"
+        for name, value in safetensors_header(shard).items():
+            if name == "__metadata__":
+                continue
+            tensors[name] = {**value, "shard": shard.name}
+            if "data_offsets" in value:
+                tensors[name] = validate_tensor_offsets(
+                    shard, tensors[name], name
+                )
+    return tensors, "validated safetensors shard headers"
 
 
 def expert_number(name: str) -> int | None:
