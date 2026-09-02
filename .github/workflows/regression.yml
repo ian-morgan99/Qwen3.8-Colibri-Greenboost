@@ -22,7 +22,12 @@ jobs:
   regression:
     name: regression-tests
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # 20 minutes: the AC7 determinism check in
+    # verify_issue2_routing_provenance.py spawns 6 full trace-subprocess
+    # runs (each ~20s locally, ~60s on a slow GitHub-hosted runner),
+    # plus 2 more for the captured-trace BUG-FIX test. Locally the
+    # whole verifier completes in ~3.5 min; CI runners are ~3x slower.
+    timeout-minutes: 20
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
