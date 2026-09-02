@@ -235,6 +235,14 @@ def _run_trace(
     branch. Returns a dict with optional keys ``"metrics"`` and
     ``"trace"`` (raw trace JSON), each parsed to a dict. Either may be
     requested independently.
+
+    We *always* pass ``--output`` (a temp file) even when
+    ``want_metrics=False``. The trace tool's default for ``--output`` is
+    the canonical routing-trace artifact
+    (``artifacts/qwen38_routing_trace_metrics.json``); omitting
+    ``--output`` would cause the subprocess to overwrite that artifact on
+    every call, polluting the working tree and breaking the
+    ``simulator_commit`` invariant in the committed canonical.
     """
     cmd = [
         sys.executable,
@@ -252,23 +260,26 @@ def _run_trace(
     ]
     out_paths: dict[str, Path] = {}
     try:
-        if want_metrics:
-            f = tempfile.NamedTemporaryFile(
-                suffix=".json", prefix="ac7_metrics_", delete=False
-            )
-            f.close()
-            out_paths["metrics"] = Path(f.name)
-            cmd += ["--output", str(out_paths["metrics"])]
+        # Always redirect the metrics write to a temp path so the
+        # subprocess never touches the canonical artifact. The parsed
+        # metrics are only returned to the caller when ``want_metrics``
+        # is True; otherwise we discard the temp file in the finally.
+        f = tempfile.NamedTemporaryFile(
+            suffix=".json", prefix="ac7_metrics_", delete=False
+        )
+        f.close()
+        out_paths["metrics"] = Path(f.name)
+        cmd += ["--output", str(out_paths["metrics"])]
         if want_raw_trace:
-            f = tempfile.NamedTemporaryFile(
+            g = tempfile.NamedTemporaryFile(
                 suffix=".json", prefix="ac7_trace_", delete=False
             )
-            f.close()
-            out_paths["trace"] = Path(f.name)
+            g.close()
+            out_paths["trace"] = Path(g.name)
             cmd += ["--trace-output", str(out_paths["trace"])]
         subprocess.run(cmd, capture_output=True, text=True, check=True)
         results: dict = {}
-        if "metrics" in out_paths:
+        if want_metrics:
             results["metrics"] = json.loads(
                 out_paths["metrics"].read_text(encoding="utf-8")
             )
