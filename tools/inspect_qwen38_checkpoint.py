@@ -106,9 +106,12 @@ def main():
         'total_tensors': len(weight_map)
     }
     
-    # Save layout JSON
-    os.makedirs('artifacts/qwen38', exist_ok=True)
-    with open('artifacts/qwen38/qwen38-layout.json', 'w') as f:
+    # Save layout JSON (canonical namespace: artifacts/, not artifacts/qwen38/).
+    # Superseded by tools/build_qwen38_layout.py — kept for the legacy
+    # classification output it still produces. Do not change this path without
+    # updating tools/test_no_duplicate_artifacts.py.
+    os.makedirs('artifacts', exist_ok=True)
+    with open('artifacts/qwen38-layout.json', 'w') as f:
         json.dump(layout_data, f, indent=2)
         
     print(f"Classified {len(weight_map)} tensors into categories:")

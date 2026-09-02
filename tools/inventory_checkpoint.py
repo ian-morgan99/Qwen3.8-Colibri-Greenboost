@@ -178,7 +178,13 @@ Those remain Phase 1 gate items before implementing the tiered runtime.
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkpoint", type=Path, required=True)
-    parser.add_argument("--output", type=Path, default=Path("artifacts/qwen38"))
+    # Canonical namespace: artifacts/ (root), not artifacts/qwen38/.
+    # See tools/test_no_duplicate_artifacts.py for the regression test that
+    # guards this invariant.
+    parser.add_argument("--output", type=Path, default=Path("artifacts"))
+    parser.add_argument("--feasibility-output", type=Path, default=Path("docs"),
+                        help="Directory for the narrative QWEN38_WORKSTATION_FEASIBILITY.md. "
+                             "Canonical location is docs/; override only if you know what you are doing.")
     parser.add_argument("--vram-gib", type=float, default=32)
     parser.add_argument("--ram-gib", type=float, default=70)
     parser.add_argument("--nvme-read-gibps", type=float, default=7)
@@ -190,8 +196,10 @@ def main() -> None:
     args.output.mkdir(parents=True, exist_ok=True)
     (args.output / "qwen38-layout.json").write_text(json.dumps(layout, indent=2) + "\n", encoding="utf-8")
     (args.output / "qwen38-memory-plan.json").write_text(json.dumps(plan, indent=2) + "\n", encoding="utf-8")
-    (args.output / "QWEN38_WORKSTATION_FEASIBILITY.md").write_text(report(layout, plan), encoding="utf-8")
+    args.feasibility_output.mkdir(parents=True, exist_ok=True)
+    (args.feasibility_output / "QWEN38_WORKSTATION_FEASIBILITY.md").write_text(report(layout, plan), encoding="utf-8")
     print(f"Wrote inventory artifacts to {args.output}")
+    print(f"Wrote feasibility report to {args.feasibility_output / 'QWEN38_WORKSTATION_FEASIBILITY.md'}")
 
 
 if __name__ == "__main__":
