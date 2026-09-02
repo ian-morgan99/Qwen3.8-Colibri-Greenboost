@@ -18,7 +18,7 @@
     "l1_vram_size_gb": 16.0,
     "l2_ram_size_gb": 64.0,
     "prefetch_lookahead": 1,
-    "simulator_commit": "6201f13393f85c8392eeb47ac2cca80db3ade44d",
+    "simulator_commit": "d77f7001640fe281db5da025f225042b7be17b2d",
     "simulator_tool": "tools/trace_qwen38_routing.py",
     "data_classification": "synthetic_with_checkpoint_derived_arch"
   },
