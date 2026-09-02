@@ -1,16 +1,1651 @@
 {
-  "total_expert_requests": 184000,
-  "l1_hits": 7908,
-  "l2_hits": 132450,
-  "l3_fetches": 42296,
-  "stalling_misses": 42296,
-  "prefetched_hits": 1346,
-  "expert_bytes_from_vram": 13418.300000001898,
-  "expert_bytes_from_ram": 192052.5000003039,
-  "expert_bytes_from_nvme": 61329.19999995428,
-  "l1_hit_rate": 0.042978260869565216,
-  "l2_hit_rate": 0.7198369565217392,
-  "l3_fetch_rate": 0.2298695652173913,
-  "prefetch_hide_rate": 0.007315217391304348,
-  "stalling_miss_rate": 0.2298695652173913
+  "schema_version": "qwen38.routing_metrics.v1",
+  "provenance": {
+    "config_path": "/home/ian/Documents/VSCodeProjects/Qwen3.8/checkpoints/Qwen3.8-2.4T-A95B/config.json",
+    "config_sha256": "89391ac8f44227959cb4b89df5c94d0b78d5686bc102988ca2ca4447fc4b84f1",
+    "model_type": "qwen3_5_moe_text",
+    "architectures": [
+      "Qwen3_5MoeForCausalLM"
+    ],
+    "num_hidden_layers": 92,
+    "num_experts": 512,
+    "num_experts_per_tok": 10,
+    "bytes_per_expert_bf16": 100663296,
+    "bytes_per_layer_experts_bf16": 51539607552,
+    "trace_source": "synthetic",
+    "trace_path": null,
+    "policy": "lfru",
+    "l1_vram_size_gb": 8.0,
+    "l2_ram_size_gb": 96.0,
+    "prefetch_lookahead": 1,
+    "simulator_commit": "f3e431ef63a8428c13c29f43b5a257c0d68dbdc9",
+    "simulator_tool": "tools/trace_qwen38_routing.py",
+    "data_classification": "synthetic_with_checkpoint_derived_arch"
+  },
+  "metrics": {
+    "total_expert_requests": 184000,
+    "l1_hits": 0,
+    "l2_hits": 67663,
+    "nvme_fetches": 116337,
+    "stalling_misses": 116337,
+    "prefetched_hits": 0,
+    "expert_bytes_from_vram": 0,
+    "expert_bytes_from_ram": 18522046464000,
+    "expert_bytes_from_nvme": 11710865866752,
+    "l1_hit_rate": 0.0,
+    "l2_hit_rate": 0.3677336956521739,
+    "nvme_fetch_rate": 0.632266304347826,
+    "stalling_miss_rate": 0.632266304347826,
+    "prefetch_hide_rate": 0.0,
+    "exposed_wait_ms_total": 1912508.1184335118,
+    "exposed_wait_ms_per_token_mean": 9562.540592142805,
+    "exposed_wait_ms_per_token_p50": 9539.83714285709,
+    "exposed_wait_ms_per_token_p95": 9863.209714285658,
+    "fetch_latency_ms_p50": 15.348857142857142,
+    "fetch_latency_ms_p95": 15.348857142857142,
+    "bytes_per_token_vram_mean": 0.0,
+    "bytes_per_token_total_mean": 151164561653.76,
+    "per_token": [
+      {
+        "prompt_idx": 0,
+        "token_idx": 0,
+        "stall_ms": 14120.948571428476,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 92610232320
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 1,
+        "stall_ms": 9216.464571428522,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 55968792576
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 2,
+        "stall_ms": 9458.993999999948,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57780731904
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 3,
+        "stall_ms": 9755.418857142802,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59995324416
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 4,
+        "stall_ms": 9391.624714285663,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57277415424
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 5,
+        "stall_ms": 9741.944999999945,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59894661120
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 6,
+        "stall_ms": 9418.572428571377,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57478742016
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 7,
+        "stall_ms": 9378.150857142806,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57176752128
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 8,
+        "stall_ms": 9445.52014285709,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57680068608
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 9,
+        "stall_ms": 9539.83714285709,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58384711680
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 10,
+        "stall_ms": 9607.206428571375,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58888028160
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 11,
+        "stall_ms": 9795.840428571373,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60297314304
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 12,
+        "stall_ms": 9768.89271428566,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60095987712
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 13,
+        "stall_ms": 9270.35999999995,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56371445760
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 14,
+        "stall_ms": 9795.840428571373,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60297314304
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 15,
+        "stall_ms": 9782.366571428516,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60196651008
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 16,
+        "stall_ms": 9539.83714285709,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58384711680
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 17,
+        "stall_ms": 9472.467857142805,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57881395200
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 18,
+        "stall_ms": 9580.258714285661,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58686701568
+      },
+      {
+        "prompt_idx": 0,
+        "token_idx": 19,
+        "stall_ms": 9243.412285714236,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56170119168
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 0,
+        "stall_ms": 9580.258714285661,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58686701568
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 1,
+        "stall_ms": 9391.624714285663,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57277415424
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 2,
+        "stall_ms": 9418.572428571377,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57478742016
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 3,
+        "stall_ms": 9553.310999999947,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58485374976
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 4,
+        "stall_ms": 9526.363285714233,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58284048384
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 5,
+        "stall_ms": 9391.624714285663,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57277415424
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 6,
+        "stall_ms": 9553.310999999947,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58485374976
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 7,
+        "stall_ms": 9499.415571428519,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58082721792
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 8,
+        "stall_ms": 9553.310999999947,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58485374976
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 9,
+        "stall_ms": 9620.680285714232,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58988691456
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 10,
+        "stall_ms": 9849.735857142801,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60699967488
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 11,
+        "stall_ms": 9445.52014285709,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57680068608
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 12,
+        "stall_ms": 9593.732571428518,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58787364864
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 13,
+        "stall_ms": 9351.203142857092,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56975425536
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 14,
+        "stall_ms": 9580.258714285661,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58686701568
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 15,
+        "stall_ms": 9688.049571428517,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59492007936
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 16,
+        "stall_ms": 9539.83714285709,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58384711680
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 17,
+        "stall_ms": 9472.467857142805,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57881395200
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 18,
+        "stall_ms": 9526.363285714233,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58284048384
+      },
+      {
+        "prompt_idx": 1,
+        "token_idx": 19,
+        "stall_ms": 9310.78157142852,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56673435648
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 0,
+        "stall_ms": 9297.307714285664,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56572772352
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 1,
+        "stall_ms": 9458.993999999948,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57780731904
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 2,
+        "stall_ms": 9297.307714285664,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56572772352
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 3,
+        "stall_ms": 9566.784857142804,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58586038272
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 4,
+        "stall_ms": 9566.784857142804,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58586038272
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 5,
+        "stall_ms": 9297.307714285664,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56572772352
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 6,
+        "stall_ms": 9135.62142857138,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 55364812800
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 7,
+        "stall_ms": 9485.941714285662,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57982058496
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 8,
+        "stall_ms": 9607.206428571375,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58888028160
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 9,
+        "stall_ms": 9270.35999999995,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56371445760
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 10,
+        "stall_ms": 9337.729285714235,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56874762240
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 11,
+        "stall_ms": 8960.461285714238,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 54056189952
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 12,
+        "stall_ms": 9351.203142857092,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56975425536
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 13,
+        "stall_ms": 9661.101857142803,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59290681344
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 14,
+        "stall_ms": 9688.049571428517,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59492007936
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 15,
+        "stall_ms": 9445.52014285709,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57680068608
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 16,
+        "stall_ms": 9741.944999999945,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59894661120
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 17,
+        "stall_ms": 9728.471142857088,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59793997824
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 18,
+        "stall_ms": 9256.886142857093,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56270782464
+      },
+      {
+        "prompt_idx": 2,
+        "token_idx": 19,
+        "stall_ms": 9351.203142857092,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56975425536
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 0,
+        "stall_ms": 9270.35999999995,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56371445760
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 1,
+        "stall_ms": 9647.627999999946,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59190018048
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 2,
+        "stall_ms": 9944.0528571428,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 61404610560
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 3,
+        "stall_ms": 9674.57571428566,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59391344640
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 4,
+        "stall_ms": 9634.154142857089,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59089354752
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 5,
+        "stall_ms": 9512.889428571376,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58183385088
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 6,
+        "stall_ms": 9553.310999999947,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58485374976
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 7,
+        "stall_ms": 9620.680285714232,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58988691456
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 8,
+        "stall_ms": 9714.997285714231,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59693334528
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 9,
+        "stall_ms": 9903.63128571423,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 61102620672
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 10,
+        "stall_ms": 9714.997285714231,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59693334528
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 11,
+        "stall_ms": 9270.35999999995,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56371445760
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 12,
+        "stall_ms": 9108.673714285665,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 55163486208
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 13,
+        "stall_ms": 9903.63128571423,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 61102620672
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 14,
+        "stall_ms": 9351.203142857092,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56975425536
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 15,
+        "stall_ms": 9876.683571428515,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60901294080
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 16,
+        "stall_ms": 9620.680285714232,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58988691456
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 17,
+        "stall_ms": 9741.944999999945,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59894661120
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 18,
+        "stall_ms": 9539.83714285709,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58384711680
+      },
+      {
+        "prompt_idx": 3,
+        "token_idx": 19,
+        "stall_ms": 9553.310999999947,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58485374976
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 0,
+        "stall_ms": 9620.680285714232,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58988691456
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 1,
+        "stall_ms": 9485.941714285662,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57982058496
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 2,
+        "stall_ms": 9876.683571428515,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60901294080
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 3,
+        "stall_ms": 9674.57571428566,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59391344640
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 4,
+        "stall_ms": 9539.83714285709,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58384711680
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 5,
+        "stall_ms": 9458.993999999948,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57780731904
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 6,
+        "stall_ms": 9647.627999999946,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59190018048
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 7,
+        "stall_ms": 9378.150857142806,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57176752128
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 8,
+        "stall_ms": 9566.784857142804,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58586038272
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 9,
+        "stall_ms": 9701.523428571374,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59592671232
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 10,
+        "stall_ms": 9324.255428571378,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56774098944
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 11,
+        "stall_ms": 9701.523428571374,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59592671232
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 12,
+        "stall_ms": 9863.209714285658,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60800630784
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 13,
+        "stall_ms": 9674.57571428566,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59391344640
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 14,
+        "stall_ms": 9229.938428571379,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56069455872
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 15,
+        "stall_ms": 9782.366571428516,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60196651008
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 16,
+        "stall_ms": 9526.363285714233,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58284048384
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 17,
+        "stall_ms": 9445.52014285709,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57680068608
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 18,
+        "stall_ms": 9566.784857142804,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58586038272
+      },
+      {
+        "prompt_idx": 4,
+        "token_idx": 19,
+        "stall_ms": 9661.101857142803,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59290681344
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 0,
+        "stall_ms": 9526.363285714233,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58284048384
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 1,
+        "stall_ms": 9364.676999999949,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57076088832
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 2,
+        "stall_ms": 9809.31428571423,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60397977600
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 3,
+        "stall_ms": 9620.680285714232,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58988691456
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 4,
+        "stall_ms": 9472.467857142805,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57881395200
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 5,
+        "stall_ms": 9364.676999999949,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57076088832
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 6,
+        "stall_ms": 9458.993999999948,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57780731904
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 7,
+        "stall_ms": 9553.310999999947,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58485374976
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 8,
+        "stall_ms": 9526.363285714233,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58284048384
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 9,
+        "stall_ms": 9405.09857142852,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57378078720
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 10,
+        "stall_ms": 9553.310999999947,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58485374976
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 11,
+        "stall_ms": 9768.89271428566,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60095987712
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 12,
+        "stall_ms": 9634.154142857089,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59089354752
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 13,
+        "stall_ms": 9310.78157142852,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56673435648
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 14,
+        "stall_ms": 9485.941714285662,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57982058496
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 15,
+        "stall_ms": 9607.206428571375,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58888028160
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 16,
+        "stall_ms": 9661.101857142803,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59290681344
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 17,
+        "stall_ms": 9795.840428571373,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60297314304
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 18,
+        "stall_ms": 9593.732571428518,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58787364864
+      },
+      {
+        "prompt_idx": 5,
+        "token_idx": 19,
+        "stall_ms": 9324.255428571378,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56774098944
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 0,
+        "stall_ms": 9351.203142857092,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56975425536
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 1,
+        "stall_ms": 9593.732571428518,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58787364864
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 2,
+        "stall_ms": 9634.154142857089,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59089354752
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 3,
+        "stall_ms": 9688.049571428517,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59492007936
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 4,
+        "stall_ms": 9714.997285714231,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59693334528
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 5,
+        "stall_ms": 9432.046285714234,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57579405312
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 6,
+        "stall_ms": 9580.258714285661,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58686701568
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 7,
+        "stall_ms": 9405.09857142852,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57378078720
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 8,
+        "stall_ms": 9378.150857142806,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57176752128
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 9,
+        "stall_ms": 9728.471142857088,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59793997824
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 10,
+        "stall_ms": 9405.09857142852,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57378078720
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 11,
+        "stall_ms": 9256.886142857093,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56270782464
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 12,
+        "stall_ms": 9714.997285714231,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59693334528
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 13,
+        "stall_ms": 10078.79142857137,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 62411243520
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 14,
+        "stall_ms": 9337.729285714235,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56874762240
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 15,
+        "stall_ms": 9863.209714285658,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60800630784
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 16,
+        "stall_ms": 9418.572428571377,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57478742016
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 17,
+        "stall_ms": 9539.83714285709,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58384711680
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 18,
+        "stall_ms": 9661.101857142803,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59290681344
+      },
+      {
+        "prompt_idx": 6,
+        "token_idx": 19,
+        "stall_ms": 9364.676999999949,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57076088832
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 0,
+        "stall_ms": 9580.258714285661,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58686701568
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 1,
+        "stall_ms": 9378.150857142806,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57176752128
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 2,
+        "stall_ms": 9270.35999999995,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56371445760
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 3,
+        "stall_ms": 9364.676999999949,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57076088832
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 4,
+        "stall_ms": 9324.255428571378,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56774098944
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 5,
+        "stall_ms": 9458.993999999948,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57780731904
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 6,
+        "stall_ms": 9310.78157142852,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56673435648
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 7,
+        "stall_ms": 9499.415571428519,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58082721792
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 8,
+        "stall_ms": 9526.363285714233,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58284048384
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 9,
+        "stall_ms": 9741.944999999945,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59894661120
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 10,
+        "stall_ms": 9647.627999999946,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59190018048
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 11,
+        "stall_ms": 9485.941714285662,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57982058496
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 12,
+        "stall_ms": 9485.941714285662,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57982058496
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 13,
+        "stall_ms": 9836.261999999944,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60599304192
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 14,
+        "stall_ms": 9890.157428571372,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 61001957376
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 15,
+        "stall_ms": 9580.258714285661,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58686701568
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 16,
+        "stall_ms": 9378.150857142806,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57176752128
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 17,
+        "stall_ms": 9903.63128571423,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 61102620672
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 18,
+        "stall_ms": 9553.310999999947,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58485374976
+      },
+      {
+        "prompt_idx": 7,
+        "token_idx": 19,
+        "stall_ms": 9270.35999999995,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56371445760
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 0,
+        "stall_ms": 9580.258714285661,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58686701568
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 1,
+        "stall_ms": 9499.415571428519,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58082721792
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 2,
+        "stall_ms": 9768.89271428566,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60095987712
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 3,
+        "stall_ms": 9337.729285714235,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56874762240
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 4,
+        "stall_ms": 9755.418857142802,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59995324416
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 5,
+        "stall_ms": 9755.418857142802,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59995324416
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 6,
+        "stall_ms": 9472.467857142805,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57881395200
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 7,
+        "stall_ms": 9256.886142857093,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56270782464
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 8,
+        "stall_ms": 9351.203142857092,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56975425536
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 9,
+        "stall_ms": 9782.366571428516,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60196651008
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 10,
+        "stall_ms": 9432.046285714234,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57579405312
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 11,
+        "stall_ms": 9593.732571428518,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58787364864
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 12,
+        "stall_ms": 9526.363285714233,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58284048384
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 13,
+        "stall_ms": 9620.680285714232,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58988691456
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 14,
+        "stall_ms": 9472.467857142805,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57881395200
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 15,
+        "stall_ms": 9688.049571428517,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59492007936
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 16,
+        "stall_ms": 9472.467857142805,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57881395200
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 17,
+        "stall_ms": 9378.150857142806,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57176752128
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 18,
+        "stall_ms": 9418.572428571377,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57478742016
+      },
+      {
+        "prompt_idx": 8,
+        "token_idx": 19,
+        "stall_ms": 9795.840428571373,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60297314304
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 0,
+        "stall_ms": 9458.993999999948,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57780731904
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 1,
+        "stall_ms": 9553.310999999947,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58485374976
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 2,
+        "stall_ms": 9755.418857142802,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59995324416
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 3,
+        "stall_ms": 9351.203142857092,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56975425536
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 4,
+        "stall_ms": 9539.83714285709,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58384711680
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 5,
+        "stall_ms": 9216.464571428522,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 55968792576
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 6,
+        "stall_ms": 9539.83714285709,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58384711680
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 7,
+        "stall_ms": 9324.255428571378,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 56774098944
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 8,
+        "stall_ms": 9849.735857142801,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60699967488
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 9,
+        "stall_ms": 9378.150857142806,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57176752128
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 10,
+        "stall_ms": 9499.415571428519,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58082721792
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 11,
+        "stall_ms": 9512.889428571376,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58183385088
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 12,
+        "stall_ms": 9647.627999999946,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59190018048
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 13,
+        "stall_ms": 9836.261999999944,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60599304192
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 14,
+        "stall_ms": 9755.418857142802,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 59995324416
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 15,
+        "stall_ms": 9593.732571428518,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58787364864
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 16,
+        "stall_ms": 9405.09857142852,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57378078720
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 17,
+        "stall_ms": 9822.788142857087,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 60498640896
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 18,
+        "stall_ms": 9499.415571428519,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 58082721792
+      },
+      {
+        "prompt_idx": 9,
+        "token_idx": 19,
+        "stall_ms": 9378.150857142806,
+        "bytes_vram": 0,
+        "bytes_ram": 92610232320,
+        "bytes_nvme": 57176752128
+      }
+    ]
+  }
 }

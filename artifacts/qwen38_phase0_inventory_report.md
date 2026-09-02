@@ -1,31 +1,64 @@
 # Phase 0 — Exact Physical Inventory Report: Qwen3.8 MoE
 
-## Model Configuration
-- num_hidden_layers: 92
-- hidden_size: 8192
-- moe_intermediate_size: 2048
-- num_experts: 512
-- num_experts_per_tok: 10
-- num_attention_heads: 64
-- num_key_value_heads: 4
-- vocab_size: 152064
+> All architecture fields below are read from the checkpoint 
+> `/home/ian/Documents/VSCodeProjects/Qwen3.8/checkpoints/Qwen3.8-2.4T-A95B/config.json` (sha256 `89391ac8f4422795…`).
+> See [`docs/architecture/QWEN38_CHECKPOINT_DERIVED.md`](../docs/architecture/QWEN38_CHECKPOINT_DERIVED.md) for the full derivation.
 
-## Mandatory Non-Expert VRAM Footprint (FP16/BF16)
-- Total mandatory non-expert tensors (embed_tokens + lm_head + all layer norms + linear_attn + mlp.gate + shared_expert): **88.03 GiB**
+## Provenance tiers
+- `checkpoint_derived` — read directly from `config.json`
+- `computed_from_checkpoint` — arithmetic on `checkpoint_derived` values
+- `synthetic` — placeholder until a real measurement is captured
 
-## Expert Tensors per Layer (FP16/BF16)
-- Total expert tensors per layer (gate_up_proj + down_proj for all 512 experts): **48.00 GiB**
+## Model configuration (`checkpoint_derived`)
+- num_hidden_layers: **92**
+- hidden_size: **8192**
+- moe_intermediate_size: **2048**
+- num_experts: **512**
+- num_experts_per_tok: **10**
+- shared_expert_intermediate_size: **2048**
+- num_attention_heads: **64**
+- num_key_value_heads: **4**
+- vocab_size: **248320**  *(previous report said 152064 — that was the Qwen3 0.6B vocab; Qwen3.8 is 248320)*
+- full_attention_interval: **4** → 23 full-attn + 69 linear-attn body layers
+- mtp_num_hidden_layers: **1** (multi-token prediction head)
+- model_type: **qwen3_5_moe_text**, architectures: **Qwen3_5MoeForCausalLM**
 
-## Active Expert Bytes per Layer per Token
-- With 10 experts activated per token: **0.9375 GiB per layer per token**
+## Mandatory non-expert VRAM footprint (BF16, `computed_from_checkpoint`)
+- embed_tokens (`3.79 GiB`) + lm_head (`3.79 GiB`) = `7.58 GiB`
+- per-layer norms (~4 × hidden_size, conservative upper bound): `0.06 MiB`
+- per-layer attn (full-attn q/k/v/o with GQA 64q/4kv or linear-attn ~5H²): `640.00 MiB` (max of the two layouts)
+- per-layer mlp.gate (routing): `8.00 MiB`
+- per-layer shared expert (3 projections, no fusion): `96.00 MiB`
+- per-layer total: **0.73 GiB**
+- **Global mandatory non-expert footprint (all layers + embed/lm_head): `74.43 GiB`**
+
+## Expert tensor sizes (BF16, `computed_from_checkpoint`)
+- Per expert (gate_up + down): `96.00 MiB`
+- Per layer (all 512 experts): `48.00 GiB`
+- Active per layer per token (10 experts): `0.9375 GiB`
+- Active per **all** layers per token (92 layers × 10 active experts): `86.25 GiB` (worst case: every expert is unique)
+
+## Packed-expert storage layout (`checkpoint_derived` via safetensors index)
+- `model.layers.N.mlp.experts.gate_up_proj` and `…down_proj` pack all 512 experts into 2 tensors per body layer
+- Total packed expert tensor refs (body + MTP): **186**
+- Total shared-expert tensor refs: **372**
+- Implication: the expert cache must operate at per-expert granularity; it cannot evict a full 48 GiB packed tensor on every miss.
+- Cross-checked against the full safetensors-index layout in [`artifacts/qwen38-layout.json`](../artifacts/qwen38-layout.json) (1609 tensors total, 0 unclassified, all four category cross-checks match expected values).
+
+## Q1_0 / quantised order-of-magnitude estimate (`synthetic` — not yet measured)
+- llama.cpp Q1_0 ≈ 1.56 bpw for weights → per-expert ~15 MiB, per-layer ~7.7 GiB
+- These are **estimates** for the per-expert cache sizing argument only; the simulator that consumes this should not rely on them as ground truth.
+- Real effective Q1_0 byte sizes must come from a captured GGUF tensor inventory (see `tools/inventory_gguf.py`).
 
 ## Phase 0 Go/No-Go Gate Answers
-1. **Exact mandatory non-expert VRAM footprint**: ~88.03 GiB in FP16/BF16
-2. **Expert tensor shape/kernel compatibility**: Requires validation against vLLM-Moet SM120 kernels (gate_up_proj shape: [512, 4096, 8192], down_proj shape: [512, 8192, 2048])
-3. **Bytes per routed expert**: 0.0938 GiB per expert set (gate_up + down_proj)
-4. **Active expert bytes per layer/token**: 0.9375 GiB
+1. **Exact mandatory non-expert VRAM footprint (BF16)**: ~74.43 GiB
+2. **Expert tensor shape compatibility**: gate_up_proj `[512, 4096, 8192]`, down_proj `[512, 8192, 2048]` — must be validated against vLLM/SM120 kernels
+3. **Bytes per routed expert (BF16)**: 96.00 MiB per expert
+4. **Active expert bytes per layer/token (BF16)**: 0.9375 GiB
 
-## Next Steps
-- Validate Qwen3.8 expert tensor shapes against existing vLLM-Moet SM120 kernels
-- Calculate maximum available expert-cache size: VRAM_free = VRAM_total - mandatory_non_expert - KV(min context) - CUDA workspace
-- Estimate stalling cache miss rates and exposed transfer latency for candidate GPU/RAM cache sizes
+## Provenance
+- `config_path`: `/home/ian/Documents/VSCodeProjects/Qwen3.8/checkpoints/Qwen3.8-2.4T-A95B/config.json`
+- `config_sha256`: `89391ac8f44227959cb4b89df5c94d0b78d5686bc102988ca2ca4447fc4b84f1`
+- `model_type`: `qwen3_5_moe_text`
+- Generated by: `tools/generate_phase0_inventory.py` (Issue #2 remediation)
+
