@@ -1,4 +1,14 @@
 {
+  "schema_version": "qwen38.memory_plan.v2",
+  "provenance": {
+    "config_sha256": "89391ac8f44227959cb4b89df5c94d0b78d5686bc102988ca2ca4447fc4b84f1",
+    "config_path": "/home/ian/Documents/VSCodeProjects/Qwen3.8/checkpoints/Qwen3.8-2.4T-A95B/config.json",
+    "model_type": "qwen3_5_moe_text",
+    "architectures": [
+      "Qwen3_5MoeForCausalLM"
+    ],
+    "source_artifact": "qwen38-gguf-layout.json"
+  },
   "assumptions": {
     "vram_gib": 32,
     "ram_gib": 96,
@@ -7,19 +17,20 @@
     "quant_format": "Q1_0 (~1.56 bits/weight)"
   },
   "bytes": {
-    "dense_shared_resident": 0,
-    "routed_experts": 0,
-    "total_tensor_storage_q1_0_estimated": 0,
-    "expert_size_average_q1_0": 0.0,
-    "active_expert_bytes_per_token_estimate": 0.0
+    "dense_shared_resident": 4735868160,
+    "shared_expert_resident": 3858759680,
+    "routed_experts": 617401548800,
+    "total_tensor_storage_q1_0_estimated": 625996176640,
+    "expert_size_average_q1_0": 1205862400.0,
+    "active_expert_bytes_per_token_estimate": 12058624000.0
   },
   "capacity": {
-    "gpu_expert_cache_bytes_after_dense": 34359738368,
-    "gpu_experts_fit_after_dense": null,
-    "ram_experts_fit": null
+    "gpu_expert_cache_bytes_after_dense": 25765110528,
+    "gpu_experts_fit_after_dense": 21,
+    "ram_experts_fit": 85
   },
   "traffic": {
-    "cold_nvme_seconds_per_active_token_estimate": null,
+    "cold_nvme_seconds_per_active_token_estimate": 1.6043526785714286,
     "note": "Traffic assumes every active expert is cold and ignores overlap, compression, and filesystem cache."
   }
 }

@@ -61,3 +61,12 @@ jobs:
 
       - name: Run validate_architecture against real Qwen3.8 config
         run: python tools/validate_architecture.py --config checkpoints/Qwen3.8-2.4T-A95B/config.json
+
+      # Issue #6 follow-up: inventory_gguf.py was rewritten to fix three
+      # structural bugs (hard-coded machine paths, undefined helper,
+      # module-level code that ran before any def). This test guards
+      # header parsing, tensor classification, shard discovery, and the
+      # non-zero v2 memory-plan output. Requires the on-disk GGUF stub
+      # shard under checkpoints/Qwen3.8-2.4T-A95B-GGUF-UD-Q1_0/.
+      - name: Run test_inventory_gguf
+        run: python tools/test_inventory_gguf.py
