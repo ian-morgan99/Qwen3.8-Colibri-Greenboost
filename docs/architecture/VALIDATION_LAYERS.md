@@ -97,7 +97,7 @@ the contract doesn't have to be amended when the ranking code lands.)
 
 ## CI step ordering — and why
 
-`.github/workflows/regression.yml` runs six steps in this order:
+`.github/workflows/regression.yml` runs seven steps in this order:
 
 1. `test_no_duplicate_artifacts` — surface accidental duplicate paths
    (commit `158e38a`).
@@ -111,6 +111,10 @@ the contract doesn't have to be amended when the ranking code lands.)
    produces the right Layer 3 codes on adversarial inputs.
 6. `validate_architecture` — prove Layer 1's cross-field math, using
    the Layer 3 names from step 4.
+7. `test_inventory_gguf` — prove the GGUF-inventory contract (header
+   parse, tensor classification, memory-plan schema) on a metadata-only
+   stub shard, so the LM Studio backend contract stays stable even before
+   real GGUF shards land. See `docs/architecture/GGUF_VALIDATION_HARDENING.md`.
 
 The rationale for the ordering: each step's correctness depends on the
 contract from earlier steps. A regression in Layer 3 (step 4) is caught
@@ -118,6 +122,55 @@ contract from earlier steps. A regression in Layer 3 (step 4) is caught
 caught *before* Layer 1 (step 6) tries to import a now-renamed error
 class. This means the failure point in CI tells the operator exactly
 which contract is broken.
+
+## Layer 4 (proposed) — GGUF contract for the LM Studio backend
+
+**Status:** In progress. The GGUF-inventory contract is now defined and
+under regression test (see `docs/architecture/GGUF_VALIDATION_HARDENING.md`
+and `docs/architecture/LMSTUDIOSUPPORT_HANDOFF.md`), but the
+*validation* layer is not yet wired in. This subsection is the
+architectural placeholder for when it is.
+
+The Greenboost runtime needs to consume GGUF shards — the format that
+the LM Studio ecosystem, llama.cpp, and most production inference
+backends actually speak. A Layer 4 over GGUF would mirror the Layer 2
+byte-range invariants but in the GGUF shape:
+
+- **Header invariants**: magic bytes must equal `b"GGUF"`, version
+  field is in the supported set, `tensor_count` and `kv_count` are
+  non-negative.
+- **Key/value invariants**: `general.architecture`,
+  `qwen3_5moe.expert_count`, `qwen3_5moe.expert_used_count`,
+  `qwen3_5moe.expert_feed_forward_length`, and the matching tensor
+  shapes cross-check to the Greenboost config in
+  `checkpoints/Qwen3.8-2.4T-A95B/config.json`.
+- **Tensor invariants**: every tensor name parses to exactly one of
+  `dense`, `shared_expert`, or `routed_expert` per the classification
+  rule (see `GGUF_VALIDATION_HARDENING.md` §2.4). The
+  `experts.{N}.*` regex is anchored, the `shared_expert.*` rule takes
+  precedence over the routed rule, and unknown shapes fail loud.
+
+**On failure (planned):** a new Layer 3 code per failure class
+(e.g. `InvalidGGUFHeader`, `KvValueTypeMismatch`,
+`TensorClassificationAmbiguous`). Until this is wired, GGUF failures
+manifest as `MalformedShardHeader` from the existing Layer 2, which is
+suboptimal but not unsafe.
+
+**Hardware needed:** no. The metadata-only stub at
+`artifacts/qwen38_gguf/shards/` is a 10 MB file with 0 tensors and 58
+key/value entries, which is enough to exercise every header-invariant
+and most KV-invariant checks. A real 495 GB Qwen3.8-2.4T-A95B GGUF
+shard is needed to exercise tensor invariants, but the
+classification-rule tests in `tools/test_inventory_gguf.py` are written
+against tensor-name strings and run without any shard at all.
+
+**Out of scope for this overnight work window:** wiring Layer 4 as a
+new CI step. The regression test in step 7
+(`tools/test_inventory_gguf.py`) is currently a *behavioural* contract
+test — it proves the inventory tool returns the right values on the
+stub. A Layer 4 *validation* test would prove the validator rejects
+broken inputs. Both tests should land before the LM Studio backend
+contract is considered stable.
 
 ## How to add a new check
 
@@ -159,6 +212,12 @@ shard load — *not* between Layer 2 and Layer 3, because Layer 2 already
 
 - `docs/architecture/QWEN38_CHECKPOINT_DERIVED.md` — the architectural
   facts that Layer 1's invariants are derived from.
+- `docs/architecture/GGUF_VALIDATION_HARDENING.md` — the authoritative
+  contract for the GGUF-inventory work that step 7 of CI guards
+  (the cross-project source for the LM Studio backend integration).
+- `docs/architecture/LMSTUDIOSUPPORT_HANDOFF.md` — the portable
+  hand-off version of the above, suitable for posting to
+  `lmstudio-ai/lmstudiosupport` as an issue or PR description.
 - Issue #2 (Phase 0 routing simulator) — the consumer of the routed-expert
   layout that Layer 2 produces.
 - Issue #4 (SM_120 kernel compatibility) — the gate that blocks Phase 1
